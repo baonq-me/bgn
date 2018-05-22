@@ -1,4 +1,6 @@
-#from sage.parallel.multiprocessing_sage import pyprocessing
+# Somewhat homomorphic encryption over elliptic curve using BGN algorithm 
+
+import json
 
 def random_between(j,k):
    a = int(random()*(k-j+1))+j
@@ -13,14 +15,14 @@ class BGN():
 
 		self.p1 = self.randomPrime()
 		self.p2 = self.randomPrime()
-		self.N = self.p1 * self.p2
+		self.n = self.p1 * self.p2
 
-		N3 = 3 * self.N
+		n3 = 3 * self.n
 
-		self.p = N3 - 1
+		self.p = n3 - 1
 		self.l = 1
 		while is_prime(self.p) is False:
-		    self.p = self.p + N3
+		    self.p = self.p + n3
 		    self.l = self.l + 1
 
 		self.Fp = GF(self.p)
@@ -33,8 +35,6 @@ class BGN():
 		p2 = self.p^k
 		FpE.<a> = GF(p2, proof = False)
 
-
-
 	def initCurve(self, curve):
 		self.E = EllipticCurve(self.Fp, curve)	# curve[0,1]: y^2 = x^3 + 1
 
@@ -42,24 +42,26 @@ class BGN():
 		return random_prime(2^self.size-1, True, 2^(self.size-1))
 
 	def randomPoint(self):
-		self.P = (3*self.l*self.E.random_point())	# P = (0,1,0)
+		self.G = (3*self.l*self.E.random_point())	# P = (0,1,0)
 		#print Q*self.N == self.E([0,1,0])
 			
-		self.Q = int(1 + random() % 100) * self.P
-		print self.P
-		print self.Q
-		print self.Q*self.N
+		self.U = int(1 + random() % 100) * self.G
+		#print self.G
+		#print self.U
+		#print self.U*self.n
 
-		self.h = self.p1 * self.Q
-		
+		self.H = self.p1 * self.U
 
-def test():
-	bgn = BGN(512)
+	def genKey(self):
+		self.calcFp()
+		self.initCurve([0,1])
+		self.calcExtFp()
+		self.randomPoint()
 
-	bgn.calcFp()
-	bgn.initCurve([0,1])
-	bgn.calcExtFp()
-	bgn.randomPoint()
+		print "Public key:  " + str(json.dumps([str(self.n), str(self.G), str(self.H)]))
+		print "Private key: " + str(self.p2)
+
 
 if __name__ == '__main__':
-	test()
+	bgn = BGN(512)
+	bgn.genKey()
