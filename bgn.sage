@@ -2,12 +2,8 @@
 
 import json
 
-def random_between(j,k):
-   a = int(random()*(k-j+1))+j
-   return a
-
 class BGN():
-	def __init__(self, size, ):
+	def __init__(self, size):
 		self.size = size
 
 	def calcFp(self):
@@ -27,25 +23,22 @@ class BGN():
 
 		self.Fp = GF(self.p)
 
-		#print "P = " + str(self.p)
-		#print "N = " + str(self.N)
-
 	def calcExtFp(self):
 		k = 2
 		p2 = self.p^k
-		FpE.<a> = GF(p2, proof = False)
+		FpE.<a> = GF(p2, proof = False)	# Use pseudo primality test
 
 	def initCurve(self, curve):
 		self.E = EllipticCurve(self.Fp, curve)	# curve[0,1]: y^2 = x^3 + 1
 
 	def randomPrime(self):
-		return random_prime(2^self.size-1, True, 2^(self.size-1))
+		return random_prime(2^self.size-1, True, 2^(self.size-1))	# Use true primality test
 
 	def randomPoint(self):
-		self.G = (3*self.l*self.E.random_point())	# P = (0,1,0)
+		self.G = (3*self.l*self.E.random_point())	# G = (0,1,0)
 		#print Q*self.N == self.E([0,1,0])
 			
-		self.U = int(1 + random() % 100) * self.G
+		self.U = int(1 + random() % 100) * self.G	# Create point U using G as a generator
 		#print self.G
 		#print self.U
 		#print self.U*self.n
@@ -63,5 +56,5 @@ class BGN():
 
 
 if __name__ == '__main__':
-	bgn = BGN(512)
+	bgn = BGN(512)			# Use 512*2 = 1024 bit key length ~ RSA 15000 bit
 	bgn.genKey()
