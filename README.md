@@ -26,8 +26,9 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 
 ### Running time
 
-* Approx 18 seconds on i7-6820HQ (single core run at 3.6 GHz max)
-* Approx 14 seconds on Xeon E5-2676 v3 (single core run at 3 GHz max)
+* ~ 18 seconds on i7-6820HQ (single core run at 3.6 GHz max)
+* ~ 14 seconds on Xeon E5-2676 v3 (single core run at 3 GHz max)
+* ~ 24 seconds on Xeon E5-2650 v4 (single core run at 2.9 GHz max)
 
 ## Sample output
 
