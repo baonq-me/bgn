@@ -1,13 +1,49 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm 
 
 import json
+import zlib
+import base64
 
-def random_between(j,k):
-   a = int(random()*(k-j+1))+j
-   return a
+import gzip
+import io
+import binascii
+
+# https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d
+class Gzip():
+	# Convert text into binary data with compression enable
+	@staticmethod
+	def compress(string_):
+	    out = io.BytesIO()
+
+	    with gzip.GzipFile(fileobj=out, mode='w') as fo:
+	        fo.write(string_.encode())
+
+	    bytes_obj = out.getvalue()
+
+	    return bytes_obj
+	    
+	# Convert compressed binary data into original text
+	@staticmethod
+	def decompress(bytes_obj):
+	    in_ = io.BytesIO()
+	    in_.write(bytes_obj)
+	    in_.seek(0)
+	    with gzip.GzipFile(fileobj=in_, mode='rb') as fo:
+	        gunzipped_bytes_obj = fo.read()
+
+	    return gunzipped_bytes_obj.decode()
+
+class BinAscii():
+	@staticmethod
+	def text2bin(data):
+		return binascii.a2b_base64(data)
+	
+	@staticmethod
+	def bin2text(data):
+		return binascii.b2a_base64(data)
 
 class BGN():
-	def __init__(self, size, ):
+	def __init__(self, size):
 		self.size = size
 
 	def calcFp(self):
@@ -58,8 +94,27 @@ class BGN():
 		self.calcExtFp()
 		self.randomPoint()
 
-		print "Public key:  " + str(json.dumps([str(self.n), str(self.G), str(self.H)]))
-		print "Private key: " + str(self.p2)
+		pkey = str(json.dumps([str(self.n), str(self.G), str(self.H)]))
+		skey = str(self.p2)
+		#print pkey
+
+		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey))
+		skey_compressed = BinAscii.bin2text(Gzip.compress(skey)) 
+
+		#print pkey_compressed
+
+		#pkey_restore = Gzip.decompress(BinAscii.text2bin(pkey_compressed))
+
+		#print pkey_restore
+
+		print "[Public key]\n" + pkey_compressed.replace('\n', '')
+		print "\n[Private key]\n" + skey_compressed
+
+		pkey_restore = Gzip.decompress(BinAscii.text2bin(pkey_compressed))
+		skey_restore = Gzip.decompress(BinAscii.text2bin(skey_compressed))
+
+		assert pkey_restore == pkey
+		assert skey_restore == skey
 
 
 if __name__ == '__main__':
