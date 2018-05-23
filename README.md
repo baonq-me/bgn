@@ -2,7 +2,7 @@
 
 ## Todo
 
-* [ ] Convert public key into human-friendly form.
+* [x] Convert public key into human-friendly form.
 * [ ] Write encrypt function
 * [ ] Write decrypt function
 * [ ] Convert plaintext or binary data into bit as a input for encryption/decryption process
