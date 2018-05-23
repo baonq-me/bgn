@@ -33,7 +33,8 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 * ~ 19 seconds on Xeon X5650 (single core run at 3.06 GHz max) (virtualized CPU model is host-passthrough)
 * ~ 16 seconds on Xeon E5-2670 (single core run at 3.3 GHz max)
 * ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max)
-
+* ~ 25 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max) (virtualized CPU model is kvm64)
+* ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3.06 GHz max) (virtualized CPU model is host-passthrough)
 
 ## Sample output
 
