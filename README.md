@@ -52,3 +52,6 @@ H4sIAOtiBVsC/yWUyU0EQQxFUxnNCSQO3hdSQeSfBs/NAWm6qLK//+Kft4qNiMn6qnbXdGTkchzqqlkp
 [Private key]
 H4sIAOtiBVsC/w2MwREAMAjCVhIExf0XazleXMIVR13a39YcE6LPbHbHw7ZoBRXfjFSMchuheonChiLBa0OH/fu3NlaV4p9RvnVVs6rFflTW3Wj8kcW/Zz5BLrzl9BweNuBXCZoAAAA=
 ```
+
+## Notes
+* [Text-Binary Conversion](http://www.online-toolz.com/tools/text-binary-convertor.php)
