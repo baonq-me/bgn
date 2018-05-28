@@ -69,6 +69,7 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 
 ### Tools
 
+* [Random text generator](http://www.randomtextgenerator.com/)
 * [Text-Binary Conversion](http://www.online-toolz.com/tools/text-binary-convertor.php)
 
 ### Links
