@@ -43,7 +43,7 @@ or
 
 ### Key pair generation
 
-> These time are in real CPU time
+> These numbers are in real CPU time. User CPU time is about 20 percent smaller.
 
 * `~18` seconds on `i7-6820HQ` (single core run at 3.6 GHz max)
 * `~15` seconds on `Xeon E5-2676 v3` (single core run at 3 GHz max)
