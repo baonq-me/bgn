@@ -173,6 +173,7 @@ class BGN():
 		result = bitarray()
 		for point in ciphers_restored:
 			p = self.E([int(point[0]), int(point[1]), int(point[2])])
+			#p=self.p2
 			#print p
 			#print self.p2 * self.G
 			#print ''
