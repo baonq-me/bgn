@@ -3,6 +3,7 @@
 import json
 import zlib
 import base64
+import sys
 
 import gzip
 import io
@@ -55,6 +56,10 @@ class BinAscii():
 class BGN():
 	def __init__(self, size):
 		self.size = size
+		self.n = None
+		self.G = None
+		self.H = None
+		self.E = None
 
 	def calcFp(self):
 		#find a prime q such that q-1=0(mod N) (that is embedding degree k=1)
@@ -107,8 +112,7 @@ class BGN():
 			[str(self.H[0]), str(self.H[1]), str(self.H[2])]
 		])
 
-		skey = json.dumps([str(self.p2), str(self.n)])
-		#print pkey
+		skey = str(self.p2)
 
 		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey))
 		skey_compressed = BinAscii.bin2text(Gzip.compress(skey)) 
@@ -119,8 +123,8 @@ class BGN():
 
 		#print pkey_restore
 
-		print "[Public key]\n" + pkey_compressed.replace('\n', '')
-		print "\n[Private key]\n" + skey_compressed
+		#print "[Public key]\n" + pkey_compressed.replace('\n', '')
+		#print "\n[Private key]\n" + skey_compressed
 
 		return pkey_compressed, skey_compressed
 
@@ -130,51 +134,61 @@ class BGN():
 		#assert pkey_restore == pkey
 		#assert skey_restore == skey
 
-	@staticmethod
-	def encrypt(pkey, bits):
+	def setPublicKey(self, pkey):
 		pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
 
-		n = int(pkey_restore[0])
+		self.n = int(pkey_restore[0])
 		n3 = 3*n
-		p = n3 - 1
+		self.p = n3 - 1
 		while is_prime(p) is False:
-		    p = p + n3
-		E = EllipticCurve(GF(p), CURVE)
+		    self.p = self.p + n3
+		self.E = EllipticCurve(GF(self.p), CURVE)
 
-		G = E([pkey_restore[1][0], pkey_restore[1][1], pkey_restore[1][2]])
-		H = E([pkey_restore[2][0], pkey_restore[2][1], pkey_restore[2][2]])
+		self.G = self.E([pkey_restore[1][0], pkey_restore[1][1], pkey_restore[1][2]])
+		self.H = self.E([pkey_restore[2][0], pkey_restore[2][1], pkey_restore[2][2]])
 
-		r = random_between(1, n)
+	def setPrivateKey(self, skey):
+		if (self.n is None) or (self.E is None) or (self.G is None) or (self.H is None):
+			print 'Public key should be set first !'
+			sys.exit(1)
+
+		skey_restore = Gzip.decompress(BinAscii.text2bin(skey))
+		self.p2 = int(skey_restore)
+
+	def encrypt(self, bits):
+		r = random_between(1, self.n)
 		result = []
 
-		for i in bits:
-			c = i*G + r*H
+		for i in bits:			
+			c = i*self.G + r*self.H
 			result.append([int(c[0]), int(c[1]), int(c[2])])
 
-		binary = Gzip.compress(json.dumps(result));
-		print len(binary),' bytes'
+		#binary = Gzip.compress(json.dumps(result));
+		#print len(binary),' bytes'
 		return BinAscii.bin2text(Gzip.compress(json.dumps(result)))
 
-	'''@staticmethod
-	def decrypt(skey, ciphers):
-		skey_restore = Gzip.decompress(BinAscii.text2bin(skey))
-		n = int(skey_restore[1])
-		n3 = 3*n
-		p = n3 - 1
-		while is_prime(p) is False:
-		    p = p + n3
-		E = EllipticCurve(GF(p), CURVE)
-
-		p2 = int(skey_restore[0])
+	def decrypt(self, ciphers):
 		ciphers_restored = json.loads(Gzip.decompress(BinAscii.text2bin(ciphers)))
 
-		#for point in ciphers_restored:'''
+		result = bitarray()
+		for point in ciphers_restored:
+			p = self.E([int(point[0]), int(point[1]), int(point[2])])
+			#p=self.p2
+			#print p
+			#print self.p2 * self.G
+			#print ''
+			if self.p2 * self.G == p:
+				result.append(1)
+			else:
+				result.append(0)
+
+		print result
 
 
 if __name__ == '__main__':
-	bgn = BGN(512)			# Use 512*2 = 1024 bit key length ~ RSA 15000 bit
+	bgn = BGN(64)			# Use 512 bit key length ~ RSA 8192 bit
 	pkey,skey = bgn.genKey()
-	bits = bitarray('010011100110011101110101011110010110010101101110001000000101000101110101011011110110001100100000010000100110000101101111')
-	e = BGN.encrypt(pkey, bits)
-	print e
-	#print BGN.decrypt(skey, e)
+	bits = bitarray('010110')
+	e = bgn.encrypt(bits)
+	d = bgn.decrypt(e)
+	assert bits == d
