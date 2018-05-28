@@ -33,7 +33,17 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 # sage bgn.sage
 ```
 
-### Running time (generate key pair)
+or
+
+```
+./runme.sh
+```
+
+## Performance (5% error, increase linearly)
+
+### Key pair generation
+
+> These time are in real CPU time
 
 * ~ 18 seconds on i7-6820HQ (single core run at 3.6 GHz max)
 * ~ 15 seconds on Xeon E5-2676 v3 (single core run at 3 GHz max)
@@ -44,6 +54,19 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 * ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max)
 * ~ 25 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max) (vCPU model is kvm64)
 * ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3.06 GHz max) (vCPU model is host-passthrough)
+
+### Encryption
+
+Each byte in plaintext take ~0.33 second to encrypt (measure on i7-6820HQ, single thread).
+
+### Decryption
+
+Each byte in ciphertext take ~0.48 second to decrypt (measure on i7-6820HQ, single thread).
+
+### Size
+
+Each byte in plaintext cost ~5030 bytes in cipher text.
+
 
 ## Sample output
 
