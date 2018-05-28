@@ -33,7 +33,7 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 # sage bgn.sage
 ```
 
-### Running time
+### Running time (generate key pair)
 
 * ~ 18 seconds on i7-6820HQ (single core run at 3.6 GHz max)
 * ~ 15 seconds on Xeon E5-2676 v3 (single core run at 3 GHz max)
