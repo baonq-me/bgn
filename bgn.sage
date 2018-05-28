@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: latin-1 -*-
+
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm 
 
 import json
@@ -54,12 +57,15 @@ class BinAscii():
 		return binascii.b2a_base64(data)
 
 class BGN():
-	def __init__(self, size):
+	def __init__(self, size = 0):
 		self.size = size
 		self.n = None
 		self.G = None
 		self.H = None
 		self.E = None
+
+	def setSize(self, size):
+		self.size = size
 
 	def calcFp(self):
 		#find a prime q such that q-1=0(mod N) (that is embedding degree k=1)
@@ -114,34 +120,20 @@ class BGN():
 
 		skey = str(self.p2)
 
-		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey))
-		skey_compressed = BinAscii.bin2text(Gzip.compress(skey)) 
-
-		#print pkey_compressed
-
-		#pkey_restore = Gzip.decompress(BinAscii.text2bin(pkey_compressed))
-
-		#print pkey_restore
-
-		#print "[Public key]\n" + pkey_compressed.replace('\n', '')
-		#print "\n[Private key]\n" + skey_compressed
+		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey)).replace('\n', '')
+		skey_compressed = BinAscii.bin2text(Gzip.compress(skey)).replace('\n', '')
 
 		return pkey_compressed, skey_compressed
-
-		#pkey_restore = Gzip.decompress(BinAscii.text2bin(pkey_compressed))
-		#skey_restore = Gzip.decompress(BinAscii.text2bin(skey_compressed))
-
-		#assert pkey_restore == pkey
-		#assert skey_restore == skey
 
 	def setPublicKey(self, pkey):
 		pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
 
 		self.n = int(pkey_restore[0])
-		n3 = 3*n
+		n3 = self.n*3
 		self.p = n3 - 1
-		while is_prime(p) is False:
+		while is_prime(self.p) is False:
 		    self.p = self.p + n3
+
 		self.E = EllipticCurve(GF(self.p), CURVE)
 
 		self.G = self.E([pkey_restore[1][0], pkey_restore[1][1], pkey_restore[1][2]])
@@ -155,9 +147,12 @@ class BGN():
 		skey_restore = Gzip.decompress(BinAscii.text2bin(skey))
 		self.p2 = int(skey_restore)
 
-	def encrypt(self, bits):
+	def encrypt(self, text):
 		r = random_between(1, self.n)
 		result = []
+		bits = bitarray()
+
+		bits.frombytes(text.encode('utf-8'))
 
 		for i in bits:			
 			c = i*self.G + r*self.H
@@ -172,23 +167,35 @@ class BGN():
 
 		result = bitarray()
 		for point in ciphers_restored:
-			p = self.E([int(point[0]), int(point[1]), int(point[2])])
-			#p=self.p2
-			#print p
-			#print self.p2 * self.G
-			#print ''
+			p = self.E([int(point[0]), int(point[1]), int(point[2])]) * self.p2
 			if self.p2 * self.G == p:
 				result.append(1)
 			else:
 				result.append(0)
 
-		print result
+		return bitarray(result).tobytes().decode('utf-8')
+
+	@staticmethod
+	def length(data):
+		return len(Gzip.decompress(BinAscii.text2bin(data)))
+
 
 
 if __name__ == '__main__':
-	bgn = BGN(64)			# Use 512 bit key length ~ RSA 8192 bit
-	pkey,skey = bgn.genKey()
-	bits = bitarray('010110')
-	e = bgn.encrypt(bits)
-	d = bgn.decrypt(e)
-	assert bits == d
+	time pkey,skey = BGN(512).genKey()
+
+	bgn = BGN(512)				# Use 512 bit key length ~ RSA 8192 bit
+	bgn.setPublicKey(pkey)
+	bgn.setPrivateKey(skey)
+
+	text = 'In no impression assistance contrasted. Manners she wishing justice hastily new anxious. At discovery discourse departure objection we. Few extensive add delighted tolerably sincerity her. Law ought him least enjoy decay one quick court. Expect warmly its tended garden him esteem had remove off. Effects dearest staying now sixteen nor improve. Concerns greatest margaret him absolute entrance nay. Door neat week do find past he. Be no surprise he honoured indulged. Unpacked endeavor six steepest had husbands her. Painted no or affixed it so civilly. Exposed neither pressed so cottage as proceed at offices. Nay they gone sir game four. Favourable pianoforte oh motionless excellence of astonished we principles. Warrant present garrets limited cordial in inquiry to. Supported me sweetness behaviour shameless excellent so arranging. Bringing unlocked me an striking ye perceive. Mr by wound hours oh happy. Me in resolution pianoforte continuing we. Most my no spot felt by no. He he in forfeited furniture sweetness he arranging. Me tedious so to behaved written account ferrars moments. Too objection for elsewhere her preferred allowance her. Marianne shutters mr steepest to me. Up mr ignorant produced distance although is sociable blessing. Ham whom call all lain like. Wrote water woman of heart it total other. By in entirely securing suitable graceful at families improved. Zealously few furniture repulsive was agreeable consisted difficult. Collected breakfast estimable questions in to favourite it. Known he place worth words it as to. Spoke now noise off smart her ready. On recommend tolerably my belonging or am. Mutual has cannot beauty indeed now sussex merely you. It possible no husbands jennings ye offended packages pleasant he. Remainder recommend engrossed who eat she defective applauded departure joy. Get dissimilar not introduced day her apartments. Fully as taste he mr do smile abode every. Luckily offered article led lasting country minutes nor old. Happen people things oh is oppose up parish effect. Law handsome old outweigh humoured far appetite. He unaffected sympathize discovered at no am conviction principles. Girl ham very how yet hill four show. Meet lain on he only size. Branched learning so subjects mistress do appetite jennings be in. Esteems up lasting no village morning do offices. Settled wishing ability musical may another set age. Diminution my apartments he attachment is entreaties announcing estimating. And total least her two whose great has which. Neat pain form eat sent sex good week. Led instrument sentiments she simplicity. Cause dried no solid no an small so still widen. Ten weather evident smiling bed against she examine its. Rendered far opinions two yet moderate sex striking. Sufficient motionless compliment by stimulated assistance at. Convinced resolving extensive agreeable in it on as remainder. Cordially say affection met who propriety him. Are man she towards private weather pleased. In more part he lose need so want rank no. At bringing or he sensible pleasure. Prevent he parlors do waiting be females an message society. In by an appetite no humoured returned informed. Possession so comparison inquietude he he conviction no decisively. Marianne jointure attended she hastened surprise but she. Ever lady son yet you very paid form away. He advantage of exquisite resolving if on tolerably. Become sister on in garden it barton waited on. Contented get distrusts certainty nay are frankness concealed ham. On unaffected resolution on considered of. No thought me husband or colonel forming effects. End sitting shewing who saw besides son musical adapted. Contrasted interested eat alteration pianoforte sympathize was. He families believed if no elegance interest surprise an. It abode wrong miles an so delay plate. She relation own put outlived may disposed. Passage its ten led hearted removal cordial. Preference any astonished unreserved mrs. Prosperous understood middletons in conviction an uncommonly do. Supposing so be resolving breakfast am or perfectly. Is drew am hill from mr. Valley by oh twenty direct me so. Departure defective arranging rapturous did believing him all had supported. Family months lasted simple set nature vulgar him. Picture for attempt joy excited ten carried manners talking how. Suspicion neglected he resolving agreement perceived at an.'
+	
+	time c = bgn.encrypt(text)
+	time d = bgn.decrypt(c)
+	
+	print "[Public key] " + str(BGN.length(pkey)) + " bytes \n" + pkey
+	print "\n[Private key] " + str(BGN.length(skey)) + " bytes \n" + skey
+	print "\n[Plain text] " + str(len(text)) + " bytes \n" + text
+	print "\n[Cipher text] " + str(BGN.length(c)) + " bytes \n" + c
+
+	assert d == text
