@@ -39,36 +39,36 @@ or
 ./runme.sh
 ```
 
-## Performance (5% error, increase linearly)
+## Performance at 512 key length (5% error, increase linearly)
 
 ### Key pair generation
 
 > These time are in real CPU time
 
-* ~ 18 seconds on i7-6820HQ (single core run at 3.6 GHz max)
-* ~ 15 seconds on Xeon E5-2676 v3 (single core run at 3 GHz max)
-* ~ 23 seconds on Xeon E5-2650 v4 (single core run at 2.9 GHz max)
-* ~ 30 seconds on Xeon X5650 (single core run at 3.06 GHz max) (vCPU model is kvm64)
-* ~ 19 seconds on Xeon X5650 (single core run at 3.06 GHz max) (vCPU model is host-passthrough)
-* ~ 16 seconds on Xeon E5-2670 (single core run at 3.3 GHz max)
-* ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max)
-* ~ 25 seconds on Xeon E5-2683 v3 (single core run at 3 GHz max) (vCPU model is kvm64)
-* ~ 17 seconds on Xeon E5-2683 v3 (single core run at 3.06 GHz max) (vCPU model is host-passthrough)
+* `~18` seconds on `i7-6820HQ` (single core run at 3.6 GHz max)
+* `~15` seconds on `Xeon E5-2676 v3` (single core run at 3 GHz max)
+* `~23` seconds on `Xeon E5-2650 v4` (single core run at 2.9 GHz max)
+* `~30` seconds on `Xeon X5650` (single core run at 3.06 GHz max) (vCPU model is kvm64)
+* `~19` seconds on `Xeon X5650` (single core run at 3.06 GHz max) (vCPU model is host-passthrough)
+* `~16` seconds on `Xeon E5-2670` (single core run at 3.3 GHz max)
+* `~17` seconds on `Xeon E5-2683 v3` (single core run at 3 GHz max)
+* `~25` seconds on `Xeon E5-2683 v3` (single core run at 3 GHz max) (vCPU model is kvm64)
+* `~17` seconds on `Xeon E5-2683 v3` (single core run at 3.06 GHz max) (vCPU model is host-passthrough)
 
 ### Encryption
 
-Each byte in plaintext take ~0.33 second to encrypt (measure on i7-6820HQ, single thread).
+Each byte in plaintext take `~0.33` second to encrypt (measure on i7-6820HQ, single thread).
 
 ### Decryption
 
-Each byte in ciphertext take ~0.48 second to decrypt (measure on i7-6820HQ, single thread).
+Each byte in ciphertext take `~0.48` second to decrypt (measure on i7-6820HQ, single thread).
 
 ### Size
 
-Each byte in plaintext cost ~5030 bytes in cipher text.
+Each byte in plaintext cost `~5030` bytes in cipher text.
 
 
-## Sample output
+## Sample output at 512 key length
 
 ```
 [Public key] 1588 bytes 
