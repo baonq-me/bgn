@@ -60,4 +60,19 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 ```
 
 ## Notes
+
+### SageMath
+
+* [Sage Documentation - Constructions](http://doc.sagemath.org/html/en/constructions/index.html)
+* [Sage Documentation - A Tour of Sage](http://doc.sagemath.org/html/en/a_tour_of_sage/index.html)
+* [Sage Documentation - Installation](http://doc.sagemath.org/html/en/installation/index.html)
+
+### Tools
+
 * [Text-Binary Conversion](http://www.online-toolz.com/tools/text-binary-convertor.php)
+
+### Links
+
+* [Convert string to list of bits and viceversa
+](https://stackoverflow.com/questions/10237926/convert-string-to-list-of-bits-and-viceversa)
+* [Compress and extract string using gzip](https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d)
