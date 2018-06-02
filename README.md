@@ -11,16 +11,37 @@
 
 ## Installation (Ubuntu/Debian)
 
-```
-# apt-add-repository -y ppa:aims/sagemath
-# apt-get update
-# apt install sagemath-upstream-binary
-```
-
-### Test 
+### Install SageMath
 
 ```
-# sage -v
+apt-add-repository -y ppa:aims/sagemath
+apt-get update
+apt install sagemath-upstream-binary
+apt-get install python2.7 python-pip
+```
+
+### Install Python libraries
+
+```
+apt-get install zlib1g-dev
+pip install binascii
+pip install tornado
+pip install importlib
+```
+
+If you already upgraded pip to version `10.0.1`, you may see this error when calling pip
+
+```
+Traceback (most recent call last):
+  File "/usr/bin/pip", line 9, in <module>
+    from pip import main
+ImportError: cannot import name main
+```
+
+The only solution is getting back to version `9.0.3`
+
+```
+python -m pip install --user --upgrade pip==9.0.3
 ```
 
 ### Disable security warning
@@ -30,7 +51,9 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 ## Run
 
 ```
-# sage bgn.sage
+sage bgn.sage
+mv bgn.sage.py bgn.py
+sage web.py
 ```
 
 or
@@ -102,3 +125,4 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 * [Convert string to list of bits and viceversa
 ](https://stackoverflow.com/questions/10237926/convert-string-to-list-of-bits-and-viceversa)
 * [Compress and extract string using gzip](https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d)
+* [Ubuntu - SAGE](https://help.ubuntu.com/community/SAGE)
