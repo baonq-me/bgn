@@ -27,6 +27,7 @@ apt-get install zlib1g-dev
 pip install binascii
 pip install tornado
 pip install importlib
+pip install bitarray
 ```
 
 If you already upgraded pip to version `10.0.1`, you may see this error when calling pip
