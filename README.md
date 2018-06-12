@@ -140,3 +140,4 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 * [Ubuntu - SAGE](https://help.ubuntu.com/community/SAGE)
 * [Python Operator Overloading](http://thepythonguru.com/python-operator-overloading/)
 * [Online Python](https://www.tutorialspoint.com/execute_python_online.php)
+* [Project bitarray](https://pypi.org/project/bitarray/)
