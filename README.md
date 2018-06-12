@@ -1,5 +1,11 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
+Homomorphic encryption scheme is a kind of encryption scheme that allow performing basic operation on cipher text:
+- Addition
+- Subtraction
+- Multiplication
+- Division
+
 ## Todo
 
 * [x] Convert public key into human-friendly form.
@@ -8,6 +14,11 @@
 * [x] Convert plaintext or binary data into bit as a input for encryption/decryption process
 * [x] Allow using string as input
 * [x] Write an API gateway that allow RPC and/or load balancing
+* [ ] Write addition function
+* [ ] Write subtraction function
+* [ ] Write multiplication function
+* [ ] Write division function
+
 
 ## Installation (Ubuntu/Debian)
 
