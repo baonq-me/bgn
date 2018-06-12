@@ -138,3 +138,4 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 ](https://stackoverflow.com/questions/10237926/convert-string-to-list-of-bits-and-viceversa)
 * [Compress and extract string using gzip](https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d)
 * [Ubuntu - SAGE](https://help.ubuntu.com/community/SAGE)
+* [Python Operator Overloading](http://thepythonguru.com/python-operator-overloading/)
