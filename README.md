@@ -1,5 +1,11 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
+Homomorphic encryption scheme is a kind of encryption scheme that allow performing basic operation on cipher text:
+- Addition
+- Subtraction
+- Multiplication
+- Division
+
 ## Todo
 
 * [x] Convert public key into human-friendly form.
@@ -8,6 +14,11 @@
 * [x] Convert plaintext or binary data into bit as a input for encryption/decryption process
 * [x] Allow using string as input
 * [x] Write an API gateway that allow RPC and/or load balancing
+* [ ] Write addition function
+* [ ] Write subtraction function
+* [ ] Write multiplication function
+* [ ] Write division function
+
 
 ## Installation (Ubuntu/Debian)
 
@@ -120,6 +131,7 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 
 * [Random text generator](http://www.randomtextgenerator.com/)
 * [Text-Binary Conversion](http://www.online-toolz.com/tools/text-binary-convertor.php)
+* [Base Conversion](https://www.mathsisfun.com/binary-decimal-hexadecimal-converter.html)
 
 ### Links
 
@@ -127,3 +139,6 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 ](https://stackoverflow.com/questions/10237926/convert-string-to-list-of-bits-and-viceversa)
 * [Compress and extract string using gzip](https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d)
 * [Ubuntu - SAGE](https://help.ubuntu.com/community/SAGE)
+* [Python Operator Overloading](http://thepythonguru.com/python-operator-overloading/)
+* [Online Python](https://www.tutorialspoint.com/execute_python_online.php)
+* [Project bitarray](https://pypi.org/project/bitarray/)
