@@ -224,28 +224,54 @@ class OperatorsOnData():
 
 		return [int(p[0]), int(p[1]), int(p[2])]
 
-	def point2arr(self, p):
+	def p2a(self, p):
 		return [int(p[0]), int(p[1]), int(p[2])]
 
 	def __add__(self, data):
 		self.data2 = data.getData()
 
+		#self.data1.reverse()
+		#self.data2.reverse()
+
 		if len(self.data2) > len(self.data1):
 			self.data1, self.data2 = self.data2, self.data1
 
-		self.data1.reverse()
-		self.data2.reverse()
+		zero = Integer(random_between(1, self.n))*self.H
+		while (len(self.data2) < len(self.data1)):
+			self.data2.append(self.p2a(zero))
 
-		#print self.data1
-		#print self.data2
+
+		#for i in range(len(self.data2)-1, -1, -1):
+
+		#self.data1.append(self.p2a(zero))
+		#self.data1.append(self.p2a(zero))
+		#self.data2.append(self.p2a(zero))
+		#self.data2.append(self.p2a(zero))
+
+		print self.data1
+		print self.data2
 
 		result = []
-		for i in range(0, len(self.data1)):
+		carry = zero
+
+		for i in range(len(self.data1)-1, -1, -1):
+			print i
+			print self.n
 			try:
-				result.append(self.addPoint(self.data1[i], self.data2[i]))
+				p1 = self.E(self.data1[i][0], self.data1[i][1], self.data1[i][2])
+				p2 = self.E(self.data2[i][0], self.data2[i][1], self.data2[i][2])
+
+				t = p1 + p2
+				carry = p1.tate_pairing(p2, Integer(self.n), Integer(K))
+
+				result.append(self.p2a(t + carry))
+				#r = r.tate_pairing(t, self.n, K)
 			except IndexError:
-				result.append(self.point2arr(self.data1[i]))
-		
+				result.append(self.p2a(p1 + carry))
+				carry = p1.tate_pairing(carry, Integer(self.n), Integer(K))
+			#except AttributeError:
+			#	r = zero
+
 		print result
 
 		return BinAscii.bin2text(Gzip.compress(json.dumps(result)))
@@ -261,7 +287,7 @@ if __name__ == '__main__':
 	bgn.setPublicKey(pkey)
 	bgn.setPrivateKey(skey)
 
-	c1 = bgn.encrypt(10, 'int')
+	c1 = bgn.encrypt(20, 'int')
 	c2 = bgn.encrypt(5, 'int')
 
 	d = OperatorsOnData(c1, pkey) + OperatorsOnData(c2, pkey)
