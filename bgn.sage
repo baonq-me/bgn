@@ -15,7 +15,7 @@ from bitarray import bitarray
 
 load utils.py
 
-CURVE = [0,1] #  y^2 = x^3 + 1
+CURVE = [1,0] #  y^2 = x^3 + x
 
 K = 2
 
@@ -31,23 +31,26 @@ class BGN():
 		self.H = None
 		self.E = None
 
+		self.c = None
+		self.d = None
+
 	def setSize(self, size):
 		self.size = size
 
 	def calcFp(self):
-		n3 = 3 * self.n
+		n4 = 4 * self.n 
 
-		self.p = n3 - 1
+		self.p = n4 - 1
 		self.l = 1
 
 		while self.p.is_prime(proof=False) is False:
-			self.p = self.p + n3
+			self.p = self.p + n4
 			self.l = self.l + 1
 
 		self.Fp = GF(self.p, proof = False)
 
-	def calcExtFp(self):
-		FpE.<a> = GF(self.p^K, proof = False)	# Use pseudo primality test
+	#def calcExtFp(self):
+	#	FpE.<a> = GF(self.p^K, proof = False)	# Use pseudo primality test
 
 	def initCurve(self, curve):
 		self.p1 = self.randomPrime()
@@ -63,7 +66,7 @@ class BGN():
 			self.calcFp()
 			self.E = EllipticCurve(self.Fp, curve)
 
-		self.calcExtFp()
+		#self.calcExtFp()
 		
 	def randomPrime(self):
 		return random_prime(2^self.size-1, False, 2^(self.size-1))	# Use true primality test
@@ -79,15 +82,38 @@ class BGN():
 
 		self.H = self.p1 * self.U
 
+	def distortionMap(self, point):
+		return self.EK(-point[0], self.i*point[1], 1)
+
 	def genKey(self):
 		self.initCurve(CURVE)
 		self.randomPoint()
+
+		FpE.<a> = GF(self.p^K, proof = False)	# Use pseudo primality test
+		while (True):
+			self.i = FpE.random_element()					# https://groups.google.com/forum/#!topic/sage-support/oP77O8SovNg
+			temp = self.i^((self.p^2 - 1) / 4)
+			if temp^2 == self.p - 1:
+				self.i = temp
+				break
+
+		self.EK = self.E.base_extend(FpE)
+		self.G = self.EK(self.G)
+		self.g = self.G.tate_pairing(
+			self.distortionMap(self.G), 
+			Integer(self.n), 
+			Integer(K)
+		)
+
+		print self.g
+		print self.g.list()
 
 		pkey = json.dumps([
 			str(self.n), 
 			[str(self.G[0]), str(self.G[1]), str(self.G[2])], 
 			[str(self.H[0]), str(self.H[1]), str(self.H[2])],
-			str(self.p)		# Send E by sending p
+			str(self.p),		# Send E by sending p
+			[str(self.g[0]), str(self.g[1])]
 		])
 
 		skey = str(self.p2)
@@ -102,6 +128,7 @@ class BGN():
 
 		self.n = int(pkey_restore[0])
 		self.p = int(pkey_restore[3])
+		self.g = Polynominal(int(pkey_restore[4][0])*a + int(pkey_restore[4][1]))
 
 		self.E = EllipticCurve(GF(self.p), CURVE)
 
@@ -127,28 +154,33 @@ class BGN():
 
 			return BinAscii.bin2text(Gzip.compress(json.dumps([int(c[0]), int(c[1]), int(c[2])])))
 
-	def decrypt(self, ciphers, inputType):
-		p = json.loads(Gzip.decompress(BinAscii.text2bin(ciphers)))
+	def decrypt(self, ciphers):
+		c = json.loads(Gzip.decompress(BinAscii.text2bin(ciphers)))
 
-		C = self.E(int(p[0]), int(p[1]), int(p[2]))
-		q = Interger(sqrt(self.p1 - 1))
-		a,b = []*q
+		q = Interger(sqrt(self.p - 1))
 
-		for i in range(0, q+1):
-			a[i] = q * i * self.G
-			b[i] = C - j*self.G
+		LHS = [] * q				# Left Hand Side
+		RHS = [] * q				# Right Hand Side
 
-		if 
+		inv_g = self.g^(-1)
 
-		result = bitarray()
-		for point in ciphers_restored:
-			p = self.E([int(point[0]), int(point[1]), int(point[2])]) * self.p2
-			result.append(self.p2 * self.G == p)
+		if type(c) is int:			# If c is an element of GF(p^K)
+			c = c ^ self.p2
+			for i in range(q):
+				LHS[i] = self.g ^ (q * i) 
+				RHS[i] = c * inv_g ^ i
+		else:						
+			c = c * self.p2
+			for i in range(q):
+				LHS[i] = q * i * self.G
+				RHS[i] = c - i * self.G
+		
+		for i in range(q):
+			for j in range(q):
+				if LHS[i] == RHS[j]:
+					return i*q + j
 
-		if inputType == 'string':
-			return bitarray(result).tobytes().decode('utf-8')
-		else:
-			return int(bitarray(result).to01(), 2)
+		return -1
 
 	@staticmethod
 	def length(data):
@@ -176,7 +208,7 @@ class OperatorsOnData():
 		return [int(p[0]), int(p[1]), int(p[2])]
 
 	def a2p(self, a):
-		return self.E(int(p[0]), int(p[1]), int(p[2]))
+		return self.E(int(a[0]), int(a[1]), int(a[2]))
 
 	def __add__(self, data):
 		self.data2 = data.getData()
@@ -186,8 +218,8 @@ class OperatorsOnData():
 
 	def __mul__(self, data):
 		self.data2 = data.getData()
-		c = self.data1.tate_pairing(self.data2, self.n, K)
-
+		c = self.data1.tate_pairing(self.data2, Integer(self.n), Integer(K))
+		print c
 		return BinAscii.bin2text(Gzip.compress(json.dumps(self.p2a(c))))
 
 	def __sub__(self, data):
@@ -210,6 +242,8 @@ if __name__ == '__main__':
 	c2 = bgn.encrypt(5)
 
 	d = OperatorsOnData(c1, pkey) + OperatorsOnData(c2, pkey)
+
+	print bgn.decrypt(d)
 
 	#print bgn.decrypt(d, 'int')
 
