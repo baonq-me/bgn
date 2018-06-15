@@ -13,6 +13,8 @@ import binascii
 
 from bitarray import bitarray
 
+load utils.py
+
 CURVE = [0,1] #  y^2 = x^3 + 1
 
 K = 2
@@ -20,41 +22,6 @@ K = 2
 def random_between(j,k):
    a = int(random()*(k-j+1))+j
    return a
-
-
-# https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d
-class Gzip():
-	# Convert text into binary data with compression enable
-	@staticmethod
-	def compress(string_):
-	    out = io.BytesIO()
-
-	    with gzip.GzipFile(fileobj=out, mode='w') as fo:
-	        fo.write(string_.encode())
-
-	    bytes_obj = out.getvalue()
-
-	    return bytes_obj
-	    
-	# Convert compressed binary data into original text
-	@staticmethod
-	def decompress(bytes_obj):
-	    in_ = io.BytesIO()
-	    in_.write(bytes_obj)
-	    in_.seek(0)
-	    with gzip.GzipFile(fileobj=in_, mode='rb') as fo:
-	        gunzipped_bytes_obj = fo.read()
-
-	    return gunzipped_bytes_obj.decode()
-
-class BinAscii():
-	@staticmethod
-	def text2bin(data):
-		return binascii.a2b_base64(data)
-	
-	@staticmethod
-	def bin2text(data):
-		return binascii.b2a_base64(data)
 
 class BGN():
 	def __init__(self, size = 0):
@@ -149,28 +116,29 @@ class BGN():
 		skey_restore = Gzip.decompress(BinAscii.text2bin(skey))
 		self.p2 = int(skey_restore)
 
-	def encrypt(self, data, inputType):
-		if inputType == 'int':
-			bitString = "{0:b}".format(data)
-			bits = bitarray("{0:b}".format(data))
-		elif inputType == 'string':
-			bits = bitarray()
-			bits.frombytes(data.encode('utf-8'))
+	def encrypt(self, data):
+		data = Integer(data)
+
+		if data > 2^16:
+			print 'Max size of data is 2^16'
 		else:
-			print 'Error lhjksdhgjksdhgjksdhkjg'
+			r = random_between(1, self.n)
+			c = data*self.G + r*self.H
 
-		result = []
-		r = random_between(1, self.n)
-		for i in bits:		
-			c = i*self.G + r*self.H
-			result.append([int(c[0]), int(c[1]), int(c[2])])
-
-		#binary = Gzip.compress(json.dumps(result));
-		#print len(binary),' bytes'
-		return BinAscii.bin2text(Gzip.compress(json.dumps(result)))
+			return BinAscii.bin2text(Gzip.compress(json.dumps([int(c[0]), int(c[1]), int(c[2])])))
 
 	def decrypt(self, ciphers, inputType):
-		ciphers_restored = json.loads(Gzip.decompress(BinAscii.text2bin(ciphers)))
+		p = json.loads(Gzip.decompress(BinAscii.text2bin(ciphers)))
+
+		C = self.E(int(p[0]), int(p[1]), int(p[2]))
+		q = Interger(sqrt(self.p1 - 1))
+		a,b = []*q
+
+		for i in range(0, q+1):
+			a[i] = q * i * self.G
+			b[i] = C - j*self.G
+
+		if 
 
 		result = bitarray()
 		for point in ciphers_restored:
@@ -186,20 +154,6 @@ class BGN():
 	def length(data):
 		return len(Gzip.decompress(BinAscii.text2bin(data)))
 
-'''class OperatorsOnBit():
-	def __init__(self, c1, n, E):
-		self.E = E
-		self.n = n
-		self.c1 = self.E(c1[0], c1[1], c1[2])
-
-	def __add__(self, c2):
-		self.c2 = self.E(c2[0], c2[1], c2[2])
-		return self.c1 + self.c2
-
-	def __mul__(self, c2):
-		self.c2 = self.E(c2[0], c2[1], c2[2])
-		return self.c1.tate_pairing(self.c2, self.n, K)'''
-
 class OperatorsOnData():
 	def __init__(self, data, pkey):
 		pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
@@ -212,69 +166,34 @@ class OperatorsOnData():
 		self.G = self.E([pkey_restore[1][0], pkey_restore[1][1], pkey_restore[1][2]])
 		self.H = self.E([pkey_restore[2][0], pkey_restore[2][1], pkey_restore[2][2]])
 
-		self.data1 = json.loads(Gzip.decompress(BinAscii.text2bin(data)))
+		coordinate = json.loads(Gzip.decompress(BinAscii.text2bin(data)))
+		self.data1 = self.a2p(coordinate)
 
 	def getData(self):
 		return self.data1
 
-	def addPoint(self, p1, p2):
-		p1 = self.E(p1[0], p1[1], p1[2])
-		p2 = self.E(p2[0], p2[1], p2[2])
-		p = p1 + p2
-
-		return [int(p[0]), int(p[1]), int(p[2])]
-
 	def p2a(self, p):
 		return [int(p[0]), int(p[1]), int(p[2])]
 
+	def a2p(self, a):
+		return self.E(int(p[0]), int(p[1]), int(p[2]))
+
 	def __add__(self, data):
 		self.data2 = data.getData()
+		c = self.data1 + self.data2
 
-		#self.data1.reverse()
-		#self.data2.reverse()
+		return BinAscii.bin2text(Gzip.compress(json.dumps(self.p2a(c))))
 
-		if len(self.data2) > len(self.data1):
-			self.data1, self.data2 = self.data2, self.data1
+	def __mul__(self, data):
+		self.data2 = data.getData()
+		c = self.data1.tate_pairing(self.data2, self.n, K)
 
-		zero = Integer(random_between(1, self.n))*self.H
-		while (len(self.data2) < len(self.data1)):
-			self.data2.append(self.p2a(zero))
+		return BinAscii.bin2text(Gzip.compress(json.dumps(self.p2a(c))))
 
+	def __sub__(self, data):
+		c = self.data1 + (-self.data2)
 
-		#for i in range(len(self.data2)-1, -1, -1):
-
-		#self.data1.append(self.p2a(zero))
-		#self.data1.append(self.p2a(zero))
-		#self.data2.append(self.p2a(zero))
-		#self.data2.append(self.p2a(zero))
-
-		print self.data1
-		print self.data2
-
-		result = []
-		carry = zero
-
-		for i in range(len(self.data1)-1, -1, -1):
-			print i
-			print self.n
-			try:
-				p1 = self.E(self.data1[i][0], self.data1[i][1], self.data1[i][2])
-				p2 = self.E(self.data2[i][0], self.data2[i][1], self.data2[i][2])
-
-				t = p1 + p2
-				carry = p1.tate_pairing(p2, Integer(self.n), Integer(K))
-
-				result.append(self.p2a(t + carry))
-				#r = r.tate_pairing(t, self.n, K)
-			except IndexError:
-				result.append(self.p2a(p1 + carry))
-				carry = p1.tate_pairing(carry, Integer(self.n), Integer(K))
-			#except AttributeError:
-			#	r = zero
-
-		print result
-
-		return BinAscii.bin2text(Gzip.compress(json.dumps(result)))
+		return BinAscii.bin2text(Gzip.compress(json.dumps(self.p2a(c))))
 
 
 if __name__ == '__main__':
@@ -287,12 +206,14 @@ if __name__ == '__main__':
 	bgn.setPublicKey(pkey)
 	bgn.setPrivateKey(skey)
 
-	c1 = bgn.encrypt(20, 'int')
-	c2 = bgn.encrypt(5, 'int')
+	c1 = bgn.encrypt(20)
+	c2 = bgn.encrypt(5)
 
 	d = OperatorsOnData(c1, pkey) + OperatorsOnData(c2, pkey)
 
-	print bgn.decrypt(d, 'int')
+	#print bgn.decrypt(d, 'int')
+
+	print c1
 
 	sys.exit()
 	d = bgn.decrypt(c)
