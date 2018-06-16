@@ -1,0 +1,95 @@
+body {
+    /*background: url('../images/new-login/bg.jpg') no-repeat center !important;
+    background-size: cover !important;
+    -webkit-background-size: cover !important;
+    -moz-background-size: cover !important;
+    -o-background-size: cover !important;
+    -ms-background-size: cover !important;
+    background-attachment: fixed !important;
+    font-family: 'Mukta Mahee', sans-serif;*/
+}
+
+#logo {
+    text-align: center;
+    padding-top: 50px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+#container {
+    max-width: 450px;
+    margin: 3em auto;
+}
+
+.content-bottom {
+    padding: 3em;
+    border-radius: 0 0 25px 25px;
+}
+
+.content-top-agile {
+    background: #eee;
+    padding: 1em;
+    text-align: center;
+    border-radius: 25px 25px 0 0;
+    position: relative;
+}
+
+form .field-group {
+    background: #bbb;
+    display: -webkit-flex;
+    margin: 0 0 12px 0;
+}
+
+form .field-group span {
+    flex: 1;
+    color: white;
+    text-align: center;
+    line-height: 48px;
+}
+
+ul.list-login {
+    margin: 2em 0;
+}
+
+form .field-group .wthree-field {
+    flex: 3 50%;
+}
+
+.wthree-field input {
+    padding: 13px 15px;
+    border: none;
+    border-bottom: 1px solid #bbb;
+    box-sizing: border-box;
+    width: 100%;
+    outline: none;
+}
+
+.wthree-field input[type="submit"] {
+    background: #bbb;
+    width: 100%;
+    border: none;
+    padding: 12px 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.5s all;
+    -webkit-transition: 0.5s all;
+    -moz-transition: 0.5s all;
+    -o-transition: 0.5s all;
+    -ms-transition: 0.5s all;
+}
+
+.wthree-field input[type="submit"]:hover {
+    background: black;
+    color: #ddd;
+    letter-spacing: 3px;
+}
+
+.register {
+    text-align: center;
+    background: #eee;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 0 0 25px 25px;
+}
