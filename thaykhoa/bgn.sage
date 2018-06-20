@@ -1,59 +1,72 @@
 import sys
 
 class BGN:
-	def KeyGen(self, tau):
-		self.tau = tau # Security parameter
-		prime_length = self.tau / 2 # Bit-length of primes
-
-		self.p1 = 0
-		self.p2 = 0
-
-		# Generate two distinct large primes p1 and p2
-		while self.p1 == self.p2:
-			self.p1 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
-			self.p2 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
-
-		# Let n = p1*p2
-		self.n = self.p1 * self.p2
-
-		# Find the smallest positive integer L (0 < L < prime_length) such that p = L*n - 1 is prime and p = 3 mod 4
-		n4 = 4 * self.n
-		self.p = n4 - 1
-		self.l = 1
-		for L in range(self.tau^2):
-			self.p = self.p + n4
-			self.l = self.l + 1
-			if self.p.is_prime():
-				break
-
-		# Recursion
-		if self.p.is_prime() is False:
-			print 'Recursion ...'
-			self = BGN()
-			self.KeyGen(tau)
-			return
-
-		self.k = 2 # Extension degree k = 2
-		time self.F = GF(self.p, proof=False) # F = GF(p)
-		time self.E = EllipticCurve(self.F, [1, 0]) # E is a super-singular elliptic curve y^2 = x^3 + x defined over F
-		time self.K = GF(self.p^self.k, 'a', proof=False) # K = GF(p^2)
-		time self.EK = self.E.base_extend(self.K) # Let E to be defined over K
-		
+	def computeG(self):
 		# Find base point G of order n
 		zeroPoint = self.E(0)
-		loop = 0
 		while True:
-			loop = loop + 1
-			if loop % 50 == 0:
-				print "Looping " + str(loop)
-
-			self.G = (3*self.l*self.E.random_point())
+			self.G = (4*self.l*self.E.random_point())
 			if self.p1*self.G != zeroPoint:
 				if self.p2*self.G != zeroPoint:
 					if self.n*self.G == zeroPoint:
 						break
 
-		print 'Looped ' + str(loop)
+	def computeP(self):
+		prime_length = self.tau / 2 # Bit-length of primes
+		self.p1 = 0
+		self.p2 = 0
+		stop = False
+
+		while not stop:
+			# Generate two distinct large primes p1 and p2
+			while self.p1 == self.p2:
+				self.p1 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
+				self.p2 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
+
+			# Let n = p1*p2
+			self.n = self.p1 * self.p2
+
+			# Find the smallest positive integer L (0 < L < prime_length) such that p = L*n - 1 is prime and p = 3 mod 4
+			n4 = 4 * self.n
+			self.p = n4 - 1
+			self.l = 1
+			for L in range(self.tau^2):
+				self.p = self.p + n4
+				self.l = self.l + 1
+				if self.p.is_prime():
+					stop = True
+					break
+
+	def computeCurve(self):
+		self.k = 2 # Extension degree k = 2
+		self.F = GF(self.p, proof=False) # F = GF(p)
+		self.E = EllipticCurve(self.F, [1, 0]) # E is a super-singular elliptic curve y^2 = x^3 + x defined over F
+
+	def computeTatePairing(self):
+		# g = e(G, distortion_map(G))
+		self.g = self.EK(self.G).tate_pairing(self.distortion_map(self.G), self.n, self.k)
+
+	def computeField(self):
+		#self.K = GF(self.p^self.k, 'a', proof=False) # K = GF(p^2)
+
+		p = 23
+		
+		e = (p-1)/2
+		quadnonres = self.F.random_element()
+		#PolyRing.<x> = GF(p)[]
+		self.K = GF(self.p^2, name='a', modulus=x^2 + 1)
+		self.EK = self.E.base_extend(self.K) # Let E to be defined over K
+
+	def KeyGen(self, tau):
+		self.tau = tau # Security parameter
+
+		self.computeP()
+
+		self.computeCurve()
+
+		time self.computeField()
+
+		self.computeG()
 
 		# Find i in K such that i^2 = -1 in K
 		e = (self.p * self.p - 1) / 4
@@ -62,8 +75,8 @@ class BGN:
 			if self.i^2 == -1:
 				break	
 
-		# g = e(G, distortion_map(G))
-		time self.g = self.EK(self.G).tate_pairing(self.distortion_map(self.G), self.n, self.k)
+		self.computeTatePairing()
+
 		
 		# Find a point H of order p2
 		self.H = Integer(randrange(1,self.n)) * self.p1 * self.G
@@ -121,4 +134,4 @@ class BGN:
 while True:
 	bgn = BGN()
 	time bgn.KeyGen(1024)
-	break
+	print ' '
