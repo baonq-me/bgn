@@ -1,6 +1,8 @@
 import time
 
 class BGN:
+    PLAINTEXT_SIZE = 32
+
     def KeyGen(self, tau):
         self.tau = tau # Security parameter
         prime_length = self.tau / 2 # Bit-length of primes
@@ -10,9 +12,11 @@ class BGN:
 
         while not stop:
             # Generate two distinct large primes p1 and p2
-            #while self.p1 == self.p2:
-            self.p1 = random_prime(ubound, False, lbound)
-            self.p2 = random_prime(ubound, False, lbound)
+            while True:
+                self.p1 = random_prime(ubound, False, lbound)
+                self.p2 = random_prime(ubound, False, lbound)
+                if self.p1 != self.p2:
+                    break
 
             # Let n = p1*p2
             self.n = self.p1 * self.p2
@@ -20,10 +24,8 @@ class BGN:
             # Find the smallest positive integer L (0 < L < prime_length) such that p = L*n - 1 is prime and p = 3 mod 4
             n4 = 4 * self.n
             self.p = n4 - 1
-            self.L = 1
-            for L in range(self.tau^2):
+            for self.L in range(1,self.tau^2):
                 self.p = self.p + n4
-                self.L = self.L + 1
                 if self.p.is_prime():
                     stop = True
                     break
@@ -63,6 +65,18 @@ class BGN:
         # Find a point H of order p2
         self.H = Integer(randrange(1,self.n)) * self.p1 * self.G
         
+        # Parameters for decryption
+        self.q = 2^(BGN.PLAINTEXT_SIZE / 2) - 1
+        self.pos_lookup_table = {} # lookup table for positive plaintexts
+        self.neg_lookup_table = {} # lookup table for negative plaintexts
+        g = self.g ^ self.p2
+        for j in range(self.q):
+            a = g^j
+            self.pos_lookup_table[a] = j
+            self.neg_lookup_table[a^(-1)] = j
+            
+        self.t2 = g^self.q
+        self.t1 = self.t2^(-1)
         
         print "G = %s" % self.G
         print "g = %s" % self.g
@@ -71,25 +85,25 @@ class BGN:
     def encrypt(self, m):
         r = Integer(randrange(1,self.n))
         return m * self.G + r*self.H
-        
+
     def decrypt(self, C):
-        q = 2**16
         if type(C) == type(self.G):
-            C = self.p2 * C
-            G = self.p2 * self.G
-            
-            for m in range(q):
-                if m*G == C:
-                    return m
-            return -1
-        else:
-            C = C ^ self.p2
-            g = self.g ^ self.p2
-            for m in range(q):
-                if g^m == C:
-                    return m
-            return -1
-    
+            C = self.mul(C, self.G)
+
+        C = C ^ self.p2
+        
+        gamma1 = C
+        gamma2 = C
+        
+        for i in range(self.q):
+            if gamma1 in self.pos_lookup_table:
+                return int(i*self.q + self.pos_lookup_table[gamma1])
+            if gamma2 in self.neg_lookup_table:
+                return int(-i*self.q - self.neg_lookup_table[gamma2])
+            gamma1 = gamma1 * self.t1
+            gamma2 = gamma2 * self.t2
+        return int(-1)
+
     def distortion_map(self, P):
         return self.EK(-P.xy()[0], self.i*P.xy()[1])
 
@@ -112,13 +126,10 @@ class BGN:
     
     def minus(self, C1, C2):
         if type(C2) == type(self.G):
-            C2 = - C2
+            C2 = -C2
         else:
             C2 = C2^(-1)
         return self.add(C1, C2)
-
-
-            
 
 bgn = BGN()
 
@@ -129,14 +140,15 @@ print 'Time elapsed: %.2f seconds' % (end-start)
 C1 = bgn.encrypt(3)
 C2 = bgn.encrypt(7)
 p = bgn.mul(C1, C2)
-S = bgn.add(C1, C2)
+S = bgn.minus(C1, C2)
 diff = bgn.minus(C2, C1)
 print(bgn.decrypt(C1))
 print(bgn.decrypt(C2))
 print(bgn.decrypt(S))
 print(bgn.decrypt(p))
 print(bgn.decrypt(bgn.add(C1, p)))
+
 #print(bgn.decrypt(bgn.add(p, C2)))
 #print(bgn.decrypt(bgn.add(p, p)))
 print(bgn.decrypt(bgn.minus(S, C1)))
-print(bgn.decrypt(bgn.minus(p, S)))
+print(bgn.decrypt(bgn.minus(S, p)))
