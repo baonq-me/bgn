@@ -142,3 +142,4 @@ H4sIAO5DDFsC/+2b0XFdIQwFW3EB7wNJIKAWT/pvI4tTRCaTnXzYjt8DIS3nSNf293d09OjssUaerpgx
 * [Python Operator Overloading](http://thepythonguru.com/python-operator-overloading/)
 * [Online Python](https://www.tutorialspoint.com/execute_python_online.php)
 * [Project bitarray](https://pypi.org/project/bitarray/)
+* [Python - Built-in Exceptions](https://docs.python.org/2/library/exceptions.html)
