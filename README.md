@@ -68,7 +68,7 @@ python -m pip install --user --upgrade pip==9.0.3
 
 ### Disable security warning
 
-Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.bashrc`
+Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `~/.bashrc`
 
 ## Run
 
