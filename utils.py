@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
+import zlib
+import gzip
+
 # https://gist.github.com/Garrett-R/dc6f08fc1eab63f94d2cbb89cb61c33d
+# https://docs.python.org/3/library/gzip.html
 class Gzip():
 	# Convert text into binary data with compression enable
 	@staticmethod
-	def compress(string_):
+	def compress(string_, mode='wb', compresslevel=1):
 	    out = io.BytesIO()
 
-	    with gzip.GzipFile(fileobj=out, mode='w') as fo:
+	    with gzip.GzipFile(fileobj=out, mode=mode, compresslevel=compresslevel) as fo:
 	        fo.write(string_.encode())
 
 	    bytes_obj = out.getvalue()
@@ -16,11 +20,11 @@ class Gzip():
 	    
 	# Convert compressed binary data into original text
 	@staticmethod
-	def decompress(bytes_obj):
+	def decompress(bytes_obj, mode='rb'):
 	    in_ = io.BytesIO()
 	    in_.write(bytes_obj)
 	    in_.seek(0)
-	    with gzip.GzipFile(fileobj=in_, mode='rb') as fo:
+	    with gzip.GzipFile(fileobj=in_, mode=mode) as fo:
 	        gunzipped_bytes_obj = fo.read()
 
 	    return gunzipped_bytes_obj.decode()

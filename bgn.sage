@@ -5,18 +5,18 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
 import json
-import zlib
 import base64
 import sys
 import time
 
-import gzip
 import io
 import binascii
+
+import multiprocessing
+from threading import Thread
+
 import os
 import pickle
-
-from bitarray import bitarray
 
 load utils.py
 
@@ -44,6 +44,8 @@ class BGN():
 		self.q = None
 
 	def __dumpLookupTable(self, table, filename):
+		s = time.time()
+
 		export = [None] * len(table)
 
 		i = 0
@@ -51,21 +53,29 @@ class BGN():
 			export[i] = {"key": str(key.polynomial().list()), "value": str(value)}
 			i += 1
 
-		file = open(filename,'w') 
+		file = open(filename,'wb') 
 		file.write(Gzip.compress(json.dumps(export)))		# Compress table and write
 		#file.write(json.dumps(export))						# Write uncompressed table
 		file.close()
 
+		e = time.time()
+
+		print '__dumpLookupTable() take %.2f seconds' % (e-s)
+
 	def __loadLookupTable(self, filename):
-		file = open(filename,'r') 
+
+		s = time.time()
+
+		file = open(filename,'rb') 
 		data = json.loads(Gzip.decompress(file.read())) 	# Read and decompressed table
 		#data = json.loads(file.read())						# Read table
 		file.close()
 
-		importer = {}
+		lookupTable = {}
 		i = 0
 		self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
 		#self.q = 2^(self.SIZE_OF_PLAINTEXT / 2) - 1
+
 		while i < self.q:
 			value = Integer(data[i]['value'])
 			if value == 0:
@@ -73,13 +83,30 @@ class BGN():
 			else:
 				key = json.loads(str(data[i]['key']))
 				poly = Integer(key[1])*a + Integer(key[0])
-			importer[poly] = value
+			lookupTable[poly] = value
 			i += 1
 
-		return importer
+		e = time.time()
+		print '__loadLookupTable() take %.2f seconds' % (e-s)
+
+		return lookupTable
+
+	'''def __genLookupTableThread(self, g, loopFrom, loopTo):
+		j = loopFrom
+
+		print loopFrom
+		print loopTo
+
+		while j <= loopTo:
+			a = g^j
+			self.pos_lookup_table[a] = j
+			self.neg_lookup_table[a^(-1)] = j
+			j += 1'''
 
 	# Parameters for decryption
 	def __genLookupTable(self):
+		s = time.time()
+
 		self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
 		#self.q = 2^(self.SIZE_OF_PLAINTEXT / 2) - 1
 
@@ -88,18 +115,37 @@ class BGN():
 
 		g = self.g ^ self.p2
 		j = 0
-		while j < self.q:
-			a = g^j
-			self.pos_lookup_table[a] = j
-			self.neg_lookup_table[a^(-1)] = j
-			j = j + 1
+
+		cpu_count = multiprocessing.cpu_count()
+		cpu_count = 1
+		if cpu_count == 1:
+			while j < self.q:
+				a = g^j
+				self.pos_lookup_table[a] = j
+				self.neg_lookup_table[a^(-1)] = j
+				j = j + 1
+		'''else:
+			fragment = int(self.q / cpu_count)
+			loopFrom = 0
+			loopTo = fragment
+			threads = []
+			for i in range(cpu_count):
+				thread = Thread(target=self.__genLookupTableThread, args=(g, loopFrom, loopTo, ))
+				threads.append(thread)
+				thread.start()
+
+				loopFrom = loopTo + 1
+				loopTo += fragment
+
+			for thread in threads:
+				thread.join()'''
 
 		self.t2 = g^self.q
 		self.t1 = self.t2^(-1)
-
-		self.__dumpLookupTable(self.pos_lookup_table, 'pos_lookup_table.bin')
-		self.__dumpLookupTable(self.neg_lookup_table, 'neg_lookup_table.bin')
 		
+		e = time.time()
+		print '__genLookupTable() take %.2f seconds' % (e-s)
+
 		#data = pickle.loads(dump)
 		#data = pickle.dumps(self.neg_lookup_table, protocol=0)
 
@@ -165,21 +211,23 @@ class BGN():
 		#print self.g.polynomial().list()
 
 
-	def genKey(self, tau, __dumpLookupTable = False):
+	def genKey(self, tau, dumpLookupTable = False):
 		self.tau = tau # Security parameter
 		self.__init()
 
-		if __dumpLookupTable is True:
+		if dumpLookupTable is True:
 			self.__genLookupTable()
+			self.__dumpLookupTable(self.pos_lookup_table, 'pos_lookup_table.bin')
+			self.__dumpLookupTable(self.neg_lookup_table, 'neg_lookup_table.bin')
 		else:
 			self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
 			self.t2 = (self.g ^ self.p2)^self.q
 			self.t1 = self.t2^(-1)
 
-		if os.path.isfile("pos_lookup_table.bin"):
-			os.remove("pos_lookup_table.bin")
-		if os.path.isfile("neg_lookup_table.bin"):
-			os.remove("neg_lookup_table.bin")
+			if os.path.isfile("pos_lookup_table.bin"):
+				os.remove("pos_lookup_table.bin")
+			if os.path.isfile("neg_lookup_table.bin"):
+				os.remove("neg_lookup_table.bin")
 
 		i = self.i.polynomial().list()
 		pkey = json.dumps([
@@ -189,7 +237,8 @@ class BGN():
 			[str(self.H[0]), str(self.H[1]), str(self.H[2])],
 			[str(i[0]), str(i[1])]
 		])
-		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey)).replace('\n', '')
+
+		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey, compresslevel=9)).replace('\n', '')
 
 		t1 = self.t1.polynomial().list()
 		t2 = self.t2.polynomial().list()
@@ -203,32 +252,38 @@ class BGN():
 			[str(g[0]), str(g[1])],
 			str(self.q)
 		])
-		skey_compressed = BinAscii.bin2text(Gzip.compress(skey)).replace('\n', '')
+		skey_compressed = BinAscii.bin2text(Gzip.compress(skey, compresslevel=9)).replace('\n', '')
 
 		return pkey_compressed, skey_compressed
 
 	def setPublicKey(self, pkey):
+		s = time.time()
+
 		pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
 
 		self.p = Integer(pkey_restore[1])
 		self.F = GF(self.p, proof=False) # F = GF(p)
 		self.E = EllipticCurve(self.F, [1, 0]) # E is a super-singular elliptic curve y^2 = x^3 + x defined over F
 
-		# Used by decrypt()
 		self.n = Integer(pkey_restore[0])
 		self.G = self.E([pkey_restore[2][0], pkey_restore[2][1], pkey_restore[2][2]])
 		self.H = self.E([pkey_restore[3][0], pkey_restore[3][1], pkey_restore[3][2]])
-
 		self.K = GF(self.p^self.k, name='a', modulus=x^2+1, check_irreducible=False, proof=False) # K = GF(p^2)
 		self.K.inject_variables(verbose=False)		# https://stackoverflow.com/questions/33239620/sage-polynomials-name-error
 		self.EK = EllipticCurve(self.K, [1, 0]) # Let E to be defined over K
+		
 
 		# Used by __distortion_map by mul()
 		self.i = Integer(pkey_restore[4][1])*a + Integer(pkey_restore[4][0])
 
+		e = time.time()
+		print 'setPublicKey() take %.2f seconds' % (e-s)
+
 		return self
 
 	def setPrivateKey(self, skey):
+		s = time.time()
+
 		skey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(skey)))
 
 		self.setPublicKey(skey_restore[0])
@@ -239,24 +294,33 @@ class BGN():
 		self.g = Integer(skey_restore[4][1])*a + Integer(skey_restore[4][0])
 		self.q = Integer(skey_restore[5])
 
+
 		if os.path.exists('neg_lookup_table.bin') and os.path.exists('pos_lookup_table.bin'):
 			# Load lookup table from file
-			time self.pos_lookup_table = self.__loadLookupTable('pos_lookup_table.bin')
-			time self.neg_lookup_table = self.__loadLookupTable('neg_lookup_table.bin')
+			self.pos_lookup_table = self.__loadLookupTable('pos_lookup_table.bin')
+			self.neg_lookup_table = self.__loadLookupTable('neg_lookup_table.bin')
 		else:
 			# Generate lookup table
 			self.__genLookupTable()
+
+		e = time.time()
+		print 'setPrivateKey() take %.2f seconds' % (e-s)
 
 		return self
 		
 	def encrypt(self, M):
 		if type(M) is not Integer or M > 2^self.SIZE_OF_PLAINTEXT:
-			raise RuntimeError("Plaintext should be an integer that smaller than 2^" + str(self.SIZE_OF_PLAINTEXT))
+			raise TypeError("Plaintext should be an integer that smaller than 2^" + str(self.SIZE_OF_PLAINTEXT))
 		else:
+			s = time.time()
+
 			r = Integer(randrange(1,self.n))
 			C = M*self.G + r*self.H
 
-			return BinAscii.bin2text(Gzip.compress(json.dumps([int(C[0]), int(C[1]), int(C[2])])))
+			e = time.time()
+			print 'encrypt() take %.2f seconds' % (e-s)
+
+			return self.__exportCipher(C)
 
 	'''@staticmethod
 	def length(data):
@@ -283,30 +347,47 @@ class BGN():
 
 	# Require self.G, self,p2 (private), self.q, pos_lookup_table and neg_lookup_table, self.t1, self.t2, self.i
 	def decrypt(self, c):
+		s = time.time()
+
 		if self.p2 is None or self.pos_lookup_table is None or self.neg_lookup_table is None:
 			raise RuntimeError("Private key should be installed first")
 
 		C = self.__importCipherFromStr(c)
-
 		if type(C) is type(self.G):   # If C is not a point on curve
 			C = self.__mul(C, self.G)   # C = C * G
 
 		C = C ^ self.p2
-		
 		gamma1 = C
 		gamma2 = C
+		D = None
 		
 		i = 0
-		while i < self.q:
-			if gamma1 in self.pos_lookup_table:
-				return Integer(i*self.q + self.pos_lookup_table[gamma1])
-			if gamma2 in self.neg_lookup_table:
-				return Integer(-i*self.q - self.neg_lookup_table[gamma2])
-			gamma1 *= self.t1
-			gamma2 *= self.t2
-			i += 1
+		if D is None:
+			while i < self.q:
+				if gamma1 in self.pos_lookup_table:
+					D = Integer(i*self.q + self.pos_lookup_table[gamma1])
+					break
+				gamma1 *= self.t1
+				i += 1
 
-		raise RuntimeError("Could not finish decryption: plaintext is not in range [-2^" + str(self.SIZE_OF_PLAINTEXT-1) + ",2^" + str(self.SIZE_OF_PLAINTEXT-1) + "-1]")
+		i = 0
+		if D is None:
+			while i < self.q:
+				if gamma2 in self.neg_lookup_table:
+					D = Integer(-i*self.q - self.neg_lookup_table[gamma2])
+					break
+				gamma2 *= self.t2
+				i += 1
+
+
+		e = time.time()
+
+		print 'decrypt() take %.2f seconds' % (e-s)
+
+		if D is None:
+			raise RuntimeError("Could not finish decryption: plaintext is not in range [-2^" + str(self.SIZE_OF_PLAINTEXT-1) + ",2^" + str(self.SIZE_OF_PLAINTEXT-1) + "-1]")
+		else:
+			return D
 
 	# Private function
 	def __mul(self, c1, c2):
@@ -347,6 +428,8 @@ class BGN():
 		return self.__exportCipher(C)
 
 	def minus(self, c1, c2):
+		s = time.time()
+
 		C1 = self.__importCipherFromStr(c1)
 		C2 = self.__importCipherFromStr(c2)
 
@@ -356,12 +439,19 @@ class BGN():
 			C2 = C2^(-1)
 		
 		C = self.__add(C1, C2)
+
+		e = time.time()
+		print 'minus() take %.2f seconds' % (e-s)
+		
 		return self.__exportCipher(C)
 
 if __name__ == '__main__':
-
 	# Local machine
-	pkey,skey = BGN().genKey(512)
+	s = time.time()
+	pkey,skey = BGN().genKey(512, dumpLookupTable=False)
+	e = time.time()
+	print 'Generating key pair take: %.2f seconds' % (e-s)
+
 
 	c = BGN().setPublicKey(pkey).encrypt(123456789)
 
