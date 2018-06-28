@@ -26,7 +26,7 @@ Homomorphic encryption scheme is a kind of encryption scheme that allow performi
 
 ## Installation (Ubuntu/Debian)
 
-### Install SageMath
+### Install SageMath (binary package is available for Ubuntu/Debian)
 
 ```
 apt-add-repository -y ppa:aims/sagemath
@@ -35,7 +35,13 @@ apt install sagemath-upstream-binary
 apt-get install python2.7 python-pip
 ```
 
-### Install Python libraries
+### Compiling SageMath
+
+Follow instructions at [Sage Installation Guide - Install from Source Code](http://doc.sagemath.org/html/en/installation/source.html)
+
+Estimated time: 10 hours (tested on i7-6820HQ using 8 threads)
+
+### Installing python libraries
 
 ```
 apt-get install zlib1g-dev
@@ -73,6 +79,26 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.
 ## Web API
 
 ### Generate key pairs
+
+Updating ...
+
+### Encryption
+
+Updating ...
+
+### Decryption
+
+Updating ...
+
+### Adding two numbers
+
+Updating ...
+
+### Multiply two numbers
+
+Updating ...
+
+### Substract two numbers
 
 Updating ...
 
