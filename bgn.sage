@@ -1,6 +1,4 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
@@ -14,6 +12,9 @@ import binascii
 
 import multiprocessing
 from threading import Thread
+
+from sage.parallel.multiprocessing_sage import pyprocessing
+
 
 import os
 import pickle
@@ -91,17 +92,17 @@ class BGN():
 
 		return lookupTable
 
-	'''def __genLookupTableThread(self, g, loopFrom, loopTo):
+	def __genLookupTableThread(self, loopFrom):
 		j = loopFrom
+		g = self.g ^ self.p2
 
-		print loopFrom
-		print loopTo
+		loopTo = loopFrom + self.fragment
 
 		while j <= loopTo:
 			a = g^j
 			self.pos_lookup_table[a] = j
 			self.neg_lookup_table[a^(-1)] = j
-			j += 1'''
+			j += 1
 
 	# Parameters for decryption
 	def __genLookupTable(self):
@@ -116,14 +117,13 @@ class BGN():
 		g = self.g ^ self.p2
 		j = 0
 
-		cpu_count = multiprocessing.cpu_count()
+		#cpu_count = multiprocessing.cpu_count()
 		cpu_count = 1
 		if cpu_count == 1:
-			while j < self.q:
+			for j in range(self.q):
 				a = g^j
 				self.pos_lookup_table[a] = j
 				self.neg_lookup_table[a^(-1)] = j
-				j = j + 1
 		'''else:
 			fragment = int(self.q / cpu_count)
 			loopFrom = 0
@@ -155,27 +155,28 @@ class BGN():
 	def __init(self):
 		prime_length = self.tau / 2 # Bit-length of primes
 		stop = False
+		ubound = (2^prime_length) - 1
+		lbound = 2^(prime_length - 1)
 
 		while not stop:
+			self.p1 = 0
+			self.p2 = 0
 			# Generate two distinct large primes p1 and p2
 			while self.p1 == self.p2:
-				self.p1 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
-				self.p2 = random_prime(2^prime_length - 1, False, 2^(prime_length - 1))
-
-			# Let n = p1*p2
+				self.p1 = random_prime(ubound, False, lbound)
+				self.p2 = random_prime(ubound, False, lbound)
+			
 			self.n = self.p1 * self.p2
 
 			# Find the smallest positive integer L (0 < L < prime_length) such that p = L*n - 1 is prime and p = 3 mod 4
 			n4 = 4 * self.n
-			self.p = n4 - 1 
-			self.L = 1
-			while self.L < self.tau^2:
-			#for self.L in range(1,self.tau^2):
-				self.p = self.p + n4
+			self.p = n4 - 1
+			for self.L in range(1, self.tau^2):
+				self.p += n4
 				if self.p.is_prime():
 					stop = True
 					break
-				self.L = self.L + 1
+				#self.L += 1
 
 		self.F = GF(self.p, proof=False) # F = GF(p)
 		self.E = EllipticCurve(self.F, [1, 0]) # E is a super-singular elliptic curve y^2 = x^3 + x defined over F
@@ -193,12 +194,12 @@ class BGN():
 				break
 
 		# Find base point G of order n
-		pointAtInf__inity = self.E(0)
+		pointAtInfinity = self.E(0)
 		while True:
 			self.G = (4*self.L*self.E.random_point())
-			if self.n*self.G == pointAtInf__inity:
-				if self.p1*self.G != pointAtInf__inity:
-					if self.p2*self.G != pointAtInf__inity:
+			if self.n*self.G == pointAtInfinity:
+				if self.p1*self.G != pointAtInfinity:
+					if self.p2*self.G != pointAtInfinity:
 						break
 
 		# g = e(G, __distortion_map(G))
@@ -258,8 +259,10 @@ class BGN():
 
 	def setPublicKey(self, pkey):
 		s = time.time()
-
-		pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
+		try:
+			pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
+		except:
+			raise TypeError("Public key is in malformed format.")
 
 		self.p = Integer(pkey_restore[1])
 		self.F = GF(self.p, proof=False) # F = GF(p)
@@ -284,7 +287,10 @@ class BGN():
 	def setPrivateKey(self, skey):
 		s = time.time()
 
-		skey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(skey)))
+		try:
+			skey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(skey)))
+		except:
+			raise TypeError("Private key is in malformed format.")
 
 		self.setPublicKey(skey_restore[0])
 
@@ -309,7 +315,7 @@ class BGN():
 		return self
 		
 	def encrypt(self, M):
-		if type(M) is not Integer or M > 2^self.SIZE_OF_PLAINTEXT:
+		if (type(M) is not Integer and type(M) is not int) or M > 2^self.SIZE_OF_PLAINTEXT:
 			raise TypeError("Plaintext should be an integer that smaller than 2^" + str(self.SIZE_OF_PLAINTEXT))
 		else:
 			s = time.time()
@@ -327,20 +333,23 @@ class BGN():
 		return len(Gzip.decompress(BinAscii.text2bin(data)))'''
 
 	def __importCipherFromStr(self, c):
-		c_arr = json.loads(Gzip.decompress(BinAscii.text2bin(c)))
-		if len(c_arr) == 2:		# C is a element in filed
-			C = Integer(c_arr[1])*a + Integer(c_arr[0])
-		else:					# C is a point on curve
-			C = self.E([Integer(c_arr[0]), Integer(c_arr[1]), Integer(c_arr[2])])
+		try:
+			c_arr = json.loads(Gzip.decompress(BinAscii.text2bin(c)))
+			if len(c_arr) == 2:		# C is a element in filed
+				C = Integer(c_arr[1])*a + Integer(c_arr[0])
+			else:					# C is a point on curve
+				C = self.E([Integer(c_arr[0]), Integer(c_arr[1]), Integer(c_arr[2])])
+		except:
+			raise TypeError("Cipher text is in malformed format.")
 
 		return C
 
 	def __exportCipher(self, c):
 		if type(c) is type(self.G):
-			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c[0]), str(c[1]), str(c[2])])))
+			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c[0]), str(c[1]), str(c[2])]))).replace('\n', '')
 		elif type(c) is type(self.i):
 			c_arr = c.polynomial().list()
-			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c_arr[0]), str(c_arr[1])])))
+			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c_arr[0]), str(c_arr[1])]))).replace('\n', '')
 		else:
 			test(c)
 			raise TypeError("Unsupported type of ciphertext.")
@@ -445,17 +454,17 @@ class BGN():
 		
 		return self.__exportCipher(C)
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 	# Local machine
-	s = time.time()
-	pkey,skey = BGN().genKey(512, dumpLookupTable=False)
-	e = time.time()
-	print 'Generating key pair take: %.2f seconds' % (e-s)
+	#s = time.time()
+	#pkey,skey = BGN().genKey(1024, dumpLookupTable=False)
+	#e = time.time()
+	#print 'Generating key pair take: %.2f seconds' % (e-s)
 
 
-	c = BGN().setPublicKey(pkey).encrypt(123456789)
+	#c = BGN().setPublicKey(pkey).encrypt(123456789)
 
-	print BGN().setPrivateKey(skey).decrypt(c)
+	#print BGN().setPrivateKey(skey).decrypt(c)
 
 	# Server
 	'''bgn1 = BGN()
