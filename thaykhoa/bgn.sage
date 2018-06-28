@@ -66,7 +66,7 @@ class BGN:
         self.H = Integer(randrange(1,self.n)) * self.p1 * self.G
         
         # Parameters for decryption
-        self.q = 2^(BGN.PLAINTEXT_SIZE / 2) - 1
+        self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
         self.pos_lookup_table = {} # lookup table for positive plaintexts
         self.neg_lookup_table = {} # lookup table for negative plaintexts
         g = self.g ^ self.p2
