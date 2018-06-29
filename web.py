@@ -47,7 +47,7 @@ class DefaultHandler(tornado.web.RequestHandler):
 		else:
 			self.response['status'] = 'unknown'
 
-		if process in ['genkey', 'encryption', 'decryption', 'addition', 'substraction', 'multiplication']:
+		if process in ['genkey', 'encrypt', 'decrypt', 'add', 'sub', 'mul']:
 			self.response['process'] = process
 		else:
 			self.response['process'] = 'unknown'
@@ -62,6 +62,13 @@ class DefaultHandler(tornado.web.RequestHandler):
 		self.response['time'] = '%.2f' % (self.end - self.start)
 
 		self.write(self.response)
+
+	def test(self, key, data):
+		if key not in data:
+			return False
+		if data[key] == '':
+			return False
+		return True
 
 class Genkey(DefaultHandler):
 	def get(self):
@@ -80,55 +87,82 @@ class Genkey(DefaultHandler):
 		
 		self.output(status="success", process="genkey", more = {"pkey":pkey, "skey":skey})
 
-class Encrypt(DefaultHandler):
+class Crypt(DefaultHandler):
 	def post(self):
-		if 'pkey' in self.request.arguments and 'data' in self.request.arguments:
-			data = self.request.arguments['data']
-			pkey = self.request.arguments['pkey']
+		if self.test('op', self.request.arguments) is False:
+			self.output(status="error", process="", msg="Operation (encrypt, decrypt) should be defined.")
+			return
 
+		op = self.request.arguments['op']
+		if op not in ['encrypt', 'decrypt']:
+			self.output(status="error", process="", msg="Invalid operation: " + str(op))
+			return
+
+		if self.test('key', self.request.arguments) is False:
+			self.output(status="error", process="", msg="Key (key) should be defined.")
+			return
+
+		if self.test('data', self.request.arguments) is False:
+			self.output(status="error", process="", msg="Data (data) not found.")
+			return
+
+		data = self.request.arguments['data']
+		if op == "encrypt":
 			try:
-				data = Integer(data)
-				assert data < 2**32
-			except:
-				self.output(status="error", process="encryption", msg="Data must be an integer in range [-2^31,2^31-1]")
+				data = Integer(data)					
+			except Exception as e:
+				self.output(status="error", process=op, msg=str(e))
 				return
 
-			try:
-				self.bgn.setPublicKey(pkey)
-			except Exception as e:
-				self.output(status="error", process="encryption", msg=str(e))
-				return				
+		try:
 
-			try:
-				C = self.bgn.encrypt(data)
-				self.output(status="success", process="encryption", data=C)
-			except Exception as e:
-				self.output(status="error", process="encryption", msg=str(e))
-		else:
-			self.output(status="error", process="encryption", msg="Public key (pkey) and data (data) should be defined.")
+			key = self.request.arguments['key']
 
-class Decrypt(DefaultHandler):
+			encrypt = self.bgn.setPublicKey
+			decrypt = self.bgn.setPrivateKey
+			locals()[op](key)		# Set key
+
+			encrypt = self.bgn.encrypt
+			decrypt = self.bgn.decrypt
+			result = locals()[op](data)		# Encrypt/Decrypt
+
+			self.output(status="success", process=op, data=result)
+
+		except Exception as e:
+			self.output(status="error", process=op, msg=str(e))
+
+class Operations(DefaultHandler):
 	def post(self):
-		if 'skey' in self.request.arguments and 'data' in self.request.arguments:
-			data = self.request.arguments['data']
-			skey = self.request.arguments['skey']
+		if self.test('op', self.request.arguments) is False:
+			self.output(status="error", process="", msg="Operation (add, sub, mul) should be defined.")
+			return
 
-			if data == '' or skey == '':
-				self.output(status="error", process="decryption", msg="Private key (pkey) and data (data) should be defined.")
-		
-			try:
-				self.bgn.setPrivateKey(skey)
-			except Exception as e:
-				self.output(status="error", process="decryption", msg=str(e))
-				return				
+		op = self.request.arguments['op']
+		if op not in ['add', 'mul', 'sub']:
+			self.output(status="error", process="", msg="Invalid operation: " + str(op))
+			return
+		elif self.test('key', self.request.arguments)  is False:
+			self.output(status="error", process=op, msg="Public key should be defined.")
+			return
 
-			try:
-				D = self.bgn.decrypt(data)
-				self.output(status="success", process="decryption", data=str(D))
-			except Exception as e:
-				self.output(status="error", process="decryption", msg=str(e))
-		else:
-			self.output(status="error", process="decryption", msg="Private key (pkey) and data (data) should be defined.")
+		if self.test('data1', self.request.arguments) is False or self.test('data2', self.request.arguments) is False:
+			self.output(status="error", process=op, msg="data1 and data2 should be defined.")
+			return
+
+		key = self.request.arguments['key']
+		data1 = self.request.arguments['data1']
+		data2 = self.request.arguments['data2']
+
+		try:
+			self.bgn.setPublicKey(key)
+			add = self.bgn.add
+			mul = self.bgn.mul
+			sub = self.bgn.sub
+			C = locals()[op](data1, data2)
+
+			self.output(status="success", process=op, data=C)
+		except Exception as e:
+			self.output(status="error", process=op, msg=str(e))			
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description = 'BGN Web API')
@@ -138,8 +172,8 @@ if __name__ == "__main__":
 
 	application = tornado.web.Application([
 		(r"/genkey", Genkey),
-		(r"/encrypt", Encrypt),
-		(r"/decrypt", Decrypt),
+		(r"/crypt", Crypt),
+		(r"/op", Operations),
 	], debug=True)
 
 	application.listen(args.port[0])

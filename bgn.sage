@@ -436,7 +436,7 @@ class BGN():
 		C = self.__add(C1, C2)
 		return self.__exportCipher(C)
 
-	def minus(self, c1, c2):
+	def sub(self, c1, c2):
 		s = time.time()
 
 		C1 = self.__importCipherFromStr(c1)
@@ -454,12 +454,18 @@ class BGN():
 		
 		return self.__exportCipher(C)
 
+	def __str__(self):
+		return 'abc'
+
 #if __name__ == '__main__':
 	# Local machine
 	#s = time.time()
-	#pkey,skey = BGN().genKey(1024, dumpLookupTable=False)
+	#pkey,skey = BGN().genKey(512, dumpLookupTable=False)
 	#e = time.time()
 	#print 'Generating key pair take: %.2f seconds' % (e-s)
+
+	#print pkey 
+	#print skey
 
 
 	#c = BGN().setPublicKey(pkey).encrypt(123456789)
