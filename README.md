@@ -98,7 +98,7 @@ curl -d '{"length": "64"}' -H "Content-Type: application/json" -X http://localho
 
 ### Crypt (Encryption and Decryption)
 
-* Endpoint: `https://bgn.rainteam.xyz/api/crypt`
+* Endpoint: `http://localhost:8080/crypt`
 * Method: POST
 * Params: op ("encrypt" and "decrypt"), key (use public key to encrypt and private key to decrypt), data
 * Output: time (time taken to process) and data
@@ -136,7 +136,7 @@ curl -d '{"key": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4O
 
 ### Operations (Addition, Substraction and Multiplication)
 
-* Endpoint: `https://bgn.rainteam.xyz/api/op`
+* Endpoint: `http://localhost:8080/op`
 * Method: POST
 * Params: op ("add", "sub" and "mul"), key (public key), data1 and data2
 * Output: time (time taken to process) and data
