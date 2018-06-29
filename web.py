@@ -171,9 +171,9 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	application = tornado.web.Application([
-		(r"/genkey", Genkey),
-		(r"/crypt", Crypt),
-		(r"/op", Operations),
+		(r"/api/genkey", Genkey),
+		(r"/api/crypt", Crypt),
+		(r"/api/op", Operations),
 	], debug=True)
 
 	application.listen(args.port[0])
