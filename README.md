@@ -1,12 +1,10 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
-Homomorphic encryption scheme is a kind of encryption scheme that allow performing basic operation on cipher text:
-- Encryption
-- Decryption
+Homomorphic encryption scheme is a kind of **asymmetric encryption scheme** that allow performing basic operation on **cipher text**:
 - Addition
 - Subtraction
 - Multiplication
-- Division (will never be implemented)
+- Division (will never be implemented in this project because of its complexity)
 
 ## Todo
 
@@ -48,6 +46,7 @@ apt-get install zlib1g-dev
 pip install binascii
 pip install tornado
 pip install importlib
+pip install tornado
 sage -pip install bitarray
 ```
 
@@ -80,27 +79,99 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `~
 
 ### Generate key pairs
 
-Updating ...
+* Endpoint: `http://localhost:8080/genkey`
+* Method: POST
+* Params: length (key length, vary from 64 to 1024)
+* Output: pkey (public key), skey (private key), length (size of key), time (time taken to process)
 
-### Encryption
+#### Example
 
-Updating ...
+Generating keys
 
-### Decryption
+```
+curl -d '{"length": "64"}' -H "Content-Type: application/json" -X http://localhost:8080/
+```
 
-Updating ...
+```
+{"status": "success", "pkey": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "skey": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4OsZdG/vbt8698yZw7LdiLNxuiubTzDuDc7Fi/eb6Fh33mfkTmASqyoz2UaJlN7362576XRs/DC9fMssmZV701nO3lIfT4fZGvjeddo4rT9Xz7JbRVFTF5PRIW8Vp5bcr0aGcr/buTRbH7LJKO5tk+tXVG3yj1j64+o0OJd1hVHuoFD96+vP5bAZd10jHHt8YKC0BjJCiZDmTIJGTkITAFkjjCZt8V4xIUAbSYaIE4JAZSkUi/8hEMIarpXkCBzRgJao9R8lCG0gyaIkRQQEyO2vKbxQKiVNsIjgkmHB3iGmlQLFFjf1g7N3YwEAAA==", "process": "genkey", "length": "64", "time": "0.17", "msg": "", "data": ""}
+```
 
-### Adding two numbers
+### Crypt (Encryption and Decryption)
 
-Updating ...
+* Endpoint: `http://localhost:8080/crypt`
+* Method: POST
+* Params: op ("encrypt" and "decrypt"), key (use public key to encrypt and private key to decrypt), data
+* Output: time (time taken to process) and data
 
-### Multiply two numbers
+#### Examples
 
-Updating ...
+Encrypt a number 2018
 
-### Substract two numbers
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "encrypt", "data": "2018"}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
+```
 
-Updating ...
+```
+{"status": "success", "process": "encrypt", "time": "0.01", "data": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "msg": ""}
+```
+
+Encrypt another number 2019
+
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "encrypt", "data": "2019"}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
+```
+
+```
+{"status": "success", "process": "encrypt", "time": "0.01", "data": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA", "msg": ""}
+```
+
+Decrypt a number. Result is 2018
+```
+curl -d '{"key": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4OsZdG/vbt8698yZw7LdiLNxuiubTzDuDc7Fi/eb6Fh33mfkTmASqyoz2UaJlN7362576XRs/DC9fMssmZV701nO3lIfT4fZGvjeddo4rT9Xz7JbRVFTF5PRIW8Vp5bcr0aGcr/buTRbH7LJKO5tk+tXVG3yj1j64+o0OJd1hVHuoFD96+vP5bAZd10jHHt8YKC0BjJCiZDmTIJGTkITAFkjjCZt8V4xIUAbSYaIE4JAZSkUi/8hEMIarpXkCBzRgJao9R8lCG0gyaIkRQQEyO2vKbxQKiVNsIjgkmHB3iGmlQLFFjf1g7N3YwEAAA==", "op": "decrypt", "data": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA="}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
+```
+
+```
+{"status": "success", "process": "decrypt", "time": "6.42", "data": "2018", "msg": ""}
+```
+
+### Operations (Addition, Substraction and Multiplication)
+
+* Endpoint: `http://localhost:8080/op`
+* Method: POST
+* Params: op ("add", "sub" and "mul"), key (public key), data1 and data2
+* Output: time (time taken to process) and data
+
+#### Examples
+
+Add two numbers (2018 and 2019). Run your own command to decrypt it :D
+
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "add", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
+```
+
+```
+{"status": "success", "process": "add", "time": "0.02", "data": "H4sIAE1aNlsC/x3JsQ3AMAgEwFUsahfPYx6YJcr+azhKcdU9RnkJnUJheqqTxbC9zDFUSJ8QDzLP9B/2XlNADXQ4AAAA", "msg": ""}
+```
+
+Substract two numbers (2018 and 2019). Run your own command to decrypt it :D
+
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "sub", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
+```
+
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "sub", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
+```
+
+Multiply two numbers (2018 and 2019). Run your own command to decrypt it :D
+
+```
+curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "mul", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
+```
+
+```
+{"status": "success", "process": "mul", "time": "0.03", "data": "H4sIAJRaNlsC/w3D0Q2AUAgDwFUM3348oC10FuP+a+gl90QSsyw2W4ZgFXrivqLOJOYvH61XVjLj/QCwtT40NAAAAA==", "msg": ""}
+```
 
 ## Performance at security parameter 512bit (size of prime number is 256bit, 20% error)
 
