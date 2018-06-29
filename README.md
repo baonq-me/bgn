@@ -68,7 +68,7 @@ python -m pip install --user --upgrade pip==9.0.3
 
 ### Disable security warning
 
-Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `.bashrc`
+Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `~/.bashrc`
 
 ## Run
 
@@ -161,3 +161,4 @@ H4sIAAvHNFsC/x2Oy20EAQhDW4nmnIPBYEMtq+2/jTARB8TH9vs80eu2yohSOAc2phMmNzyJGnZR6EzI
 * [Online Python](https://www.tutorialspoint.com/execute_python_online.php)
 * [Project bitarray](https://pypi.org/project/bitarray/)
 * [Python - Built-in Exceptions](https://docs.python.org/2/library/exceptions.html)
+* [Docs - Tornado Web Server](http://www.tornadoweb.org/en/stable/index.html)
