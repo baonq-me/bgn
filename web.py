@@ -85,7 +85,7 @@ class Genkey(DefaultHandler):
 
 		pkey, skey = BGN().genKey(length, dumpLookupTable=False)
 		
-		self.output(status="success", process="genkey", more = {"pkey":pkey, "skey":skey})
+		self.output(status="success", process="genkey", more = {"pkey":pkey, "skey":skey, "length": str(length)})
 
 class Crypt(DefaultHandler):
 	def post(self):
@@ -126,7 +126,7 @@ class Crypt(DefaultHandler):
 			decrypt = self.bgn.decrypt
 			result = locals()[op](data)		# Encrypt/Decrypt
 
-			self.output(status="success", process=op, data=result)
+			self.output(status="success", process=op, data=str(result))
 
 		except Exception as e:
 			self.output(status="error", process=op, msg=str(e))
