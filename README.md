@@ -4,7 +4,7 @@ Homomorphic encryption scheme is a kind of **asymmetric encryption scheme** that
 - Addition
 - Subtraction
 - Multiplication
-- Division (will never be implemented )
+- Division (will never be implemented in this project because of its complexity)
 
 ## Todo
 
