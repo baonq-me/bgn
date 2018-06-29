@@ -79,7 +79,8 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `~
 
 ### Generate key pairs
 
-* Endpoint: `http://localhost:8080/genkey`
+* Endpoint (your local machine): `http://localhost:8080/api/genkey`
+* Endpoint (our server with LB and FW): `https://bgn.rainteam.xyz/api/genkey`
 * Method: POST
 * Params: length (key length, vary from 64 to 1024)
 * Output: pkey (public key), skey (private key), length (size of key), time (time taken to process)
@@ -98,7 +99,8 @@ curl -d '{"length": "64"}' -H "Content-Type: application/json" -X http://localho
 
 ### Crypt (Encryption and Decryption)
 
-* Endpoint: `http://localhost:8080/crypt`
+* Endpoint (your local machine): `http://localhost:8080/api/crypt`
+* Endpoint (our server with LB and FW): `https://bgn.rainteam.xyz/api/crypt`
 * Method: POST
 * Params: op ("encrypt" and "decrypt"), key (use public key to encrypt and private key to decrypt), data
 * Output: time (time taken to process) and data
@@ -136,7 +138,8 @@ curl -d '{"key": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4O
 
 ### Operations (Addition, Substraction and Multiplication)
 
-* Endpoint: `http://localhost:8080/op`
+* Endpoint (your local machine): `http://localhost:8080/api/op`
+* Endpoint (our server with LB and FW): `https://bgn.rainteam.xyz/api/op`
 * Method: POST
 * Params: op ("add", "sub" and "mul"), key (public key), data1 and data2
 * Output: time (time taken to process) and data
