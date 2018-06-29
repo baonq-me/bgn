@@ -85,12 +85,12 @@ Add `export PYTHONWARNINGS="ignore:not adding directory '' to sys.path"` into `~
 
 #### Example
 
-Command
+Generating keys
+
 ```
 curl -d '{"length": "64"}' -H "Content-Type: application/json" -X http://localhost:8080/
 ```
 
-Result
 ```
 {"status": "success", "pkey": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "skey": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4OsZdG/vbt8698yZw7LdiLNxuiubTzDuDc7Fi/eb6Fh33mfkTmASqyoz2UaJlN7362576XRs/DC9fMssmZV701nO3lIfT4fZGvjeddo4rT9Xz7JbRVFTF5PRIW8Vp5bcr0aGcr/buTRbH7LJKO5tk+tXVG3yj1j64+o0OJd1hVHuoFD96+vP5bAZd10jHHt8YKC0BjJCiZDmTIJGTkITAFkjjCZt8V4xIUAbSYaIE4JAZSkUi/8hEMIarpXkCBzRgJao9R8lCG0gyaIkRQQEyO2vKbxQKiVNsIjgkmHB3iGmlQLFFjf1g7N3YwEAAA==", "process": "genkey", "length": "64", "time": "0.17", "msg": "", "data": ""}
 ```
@@ -104,33 +104,31 @@ Result
 
 #### Examples
 
-Command 
+Encrypt a number 2018
+
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "encrypt", "data": "2018"}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
 ```
-
-Result
 
 ```
 {"status": "success", "process": "encrypt", "time": "0.01", "data": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "msg": ""}
 ```
 
-Command
+Encrypt another number 2019
+
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "encrypt", "data": "2019"}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
 ```
 
-Result
 ```
 {"status": "success", "process": "encrypt", "time": "0.01", "data": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA", "msg": ""}
 ```
 
-Command
+Decrypt a number. Result is 2018
 ```
 curl -d '{"key": "H4sIAGVWNlsC/32Ny1LCQBBFf8WatVXOTPc8eokYMlAkODzCq1igEESRCgRD4OsZdG/vbt8698yZw7LdiLNxuiubTzDuDc7Fi/eb6Fh33mfkTmASqyoz2UaJlN7362576XRs/DC9fMssmZV701nO3lIfT4fZGvjeddo4rT9Xz7JbRVFTF5PRIW8Vp5bcr0aGcr/buTRbH7LJKO5tk+tXVG3yj1j64+o0OJd1hVHuoFD96+vP5bAZd10jHHt8YKC0BjJCiZDmTIJGTkITAFkjjCZt8V4xIUAbSYaIE4JAZSkUi/8hEMIarpXkCBzRgJao9R8lCG0gyaIkRQQEyO2vKbxQKiVNsIjgkmHB3iGmlQLFFjf1g7N3YwEAAA==", "op": "decrypt", "data": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA="}' -H "Content-Type: application/json" -X POST http://localhost:8080/crypt
 ```
 
-Result
 ```
 {"status": "success", "process": "decrypt", "time": "6.42", "data": "2018", "msg": ""}
 ```
@@ -144,32 +142,32 @@ Result
 
 #### Examples
 
-Command
+Add two numbers (2018 and 2019). Run your own command to decrypt it :D
+
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "add", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
 ```
 
-Result
 ```
 {"status": "success", "process": "add", "time": "0.02", "data": "H4sIAE1aNlsC/x3JsQ3AMAgEwFUsahfPYx6YJcr+azhKcdU9RnkJnUJheqqTxbC9zDFUSJ8QDzLP9B/2XlNADXQ4AAAA", "msg": ""}
 ```
 
-Command
+Substract two numbers (2018 and 2019). Run your own command to decrypt it :D
+
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "sub", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
 ```
 
-Result
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "sub", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
 ```
 
-Command
+Multiply two numbers (2018 and 2019). Run your own command to decrypt it :D
+
 ```
 curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2VMZsn7JaZbNQGYTVe30nHJI4YxjdB2LvEEC6pXUqfFptF2ndU79fQllHNVeqVXUGOiMzkEvgfhG2QrdtSwsxv4EfH3p5RzPuyqgWLHAAAA", "op": "mul", "data1": "H4sIALZZNlsC/xXJsQ2AQAwDwFVQago7Nok8C2L/NdBfe2/1etjRA2sVANq47quS2N6mPKDAnvQJ1vcDsfW2LzgAAAA=", "data2": "H4sIADhaNlsC/xXJwQ2AMAwDwFVQ3jxqmzjuLIj916i4773FZtZgJJvLEyNg3VcJD7p7b0GmpTjRP6jvAF0GM6A5AAAA"}' -H "Content-Type: application/json" -X POST http://localhost:8080/op
 ```
 
-Result
 ```
 {"status": "success", "process": "mul", "time": "0.03", "data": "H4sIAJRaNlsC/w3D0Q2AUAgDwFUM3348oC10FuP+a+gl90QSsyw2W4ZgFXrivqLOJOYvH61XVjLj/QCwtT40NAAAAA==", "msg": ""}
 ```
