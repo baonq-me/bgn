@@ -1,10 +1,12 @@
 # Somewhat homomorphic encryption over elliptic curve using BGN algorithm
 
-Homomorphic encryption scheme is a kind of **asymmetric encryption scheme** that allow performing basic operation on **cipher text**:
+Homomorphic encryption scheme is a kind of **asymmetric encryption scheme** that allow performing basic elementary mathematical operations of arithmetic on **cipher text**:
 - Addition
 - Subtraction
 - Multiplication
 - Division (will never be implemented in this project because of its complexity)
+
+Because this encryption scheme works fine on bit, it can encrypt and decrypt any string like other encryption schemes. But **the main purpose of this scheme is performing elementary mathematical operations of arithmetic on ciphertext** so that it only works with integers in the range [-2^31,2^31-2]. Time taken to decrypt will increase linearly by the number of integers that the algorithm can encrypt.
 
 ## Todo
 
