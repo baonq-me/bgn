@@ -46,6 +46,7 @@ apt-get install zlib1g-dev
 pip install binascii
 pip install tornado
 pip install importlib
+pip install tornado
 sage -pip install bitarray
 ```
 
