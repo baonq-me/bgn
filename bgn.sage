@@ -260,7 +260,7 @@ class BGN():
 	def setPublicKey(self, pkey):
 		s = time.time()
 		try:
-			pkey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(pkey)))
+			pkey_restore = self.decode(pkey)
 		except:
 			raise TypeError("Public key is in malformed format.")
 
@@ -288,7 +288,7 @@ class BGN():
 		s = time.time()
 
 		try:
-			skey_restore = json.loads(Gzip.decompress(BinAscii.text2bin(skey)))
+			skey_restore = self.decode(skey)
 		except:
 			raise TypeError("Private key is in malformed format.")
 
@@ -332,9 +332,15 @@ class BGN():
 	def length(data):
 		return len(Gzip.decompress(BinAscii.text2bin(data)))'''
 
+	def decode(self, data):
+		return json.loads(Gzip.decompress(BinAscii.text2bin(data)))
+
+	def encode(self, data):
+		return BinAscii.bin2text(Gzip.compress(data)).replace('\n', '')
+
 	def __importCipherFromStr(self, c):
 		try:
-			c_arr = json.loads(Gzip.decompress(BinAscii.text2bin(c)))
+			c_arr = self.decode(c)
 			if len(c_arr) == 2:		# C is a element in filed
 				C = Integer(c_arr[1])*a + Integer(c_arr[0])
 			else:					# C is a point on curve
@@ -346,10 +352,10 @@ class BGN():
 
 	def __exportCipher(self, c):
 		if type(c) is type(self.G):
-			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c[0]), str(c[1]), str(c[2])]))).replace('\n', '')
+			return self.encode(json.dumps([str(c[0]), str(c[1]), str(c[2])]))
 		elif type(c) is type(self.i):
 			c_arr = c.polynomial().list()
-			return BinAscii.bin2text(Gzip.compress(json.dumps([str(c_arr[0]), str(c_arr[1])]))).replace('\n', '')
+			return self.encode(json.dumps([str(c_arr[0]), str(c_arr[1])]))
 		else:
 			test(c)
 			raise TypeError("Unsupported type of ciphertext.")
@@ -454,8 +460,15 @@ class BGN():
 		
 		return self.__exportCipher(C)
 
-	def __str__(self):
-		return 'abc'
+	def minus(self, c):
+		C = self.__importCipherFromStr(c)
+
+		if type(C) == type(self.G):
+			C = -C
+		else:
+			C = C^(-1)
+
+		return self.__exportCipher(C)
 
 #if __name__ == '__main__':
 	# Local machine
@@ -467,8 +480,6 @@ class BGN():
 	#print pkey 
 	#print skey
 
-
-	#c = BGN().setPublicKey(pkey).encrypt(123456789)
 
 	#print BGN().setPrivateKey(skey).decrypt(c)
 

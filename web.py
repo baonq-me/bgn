@@ -15,6 +15,12 @@ import importlib
 import json
 from bgn import BGN
 import argparse
+import StringIO
+import re
+import uuid
+
+from utils import BinAscii
+import subprocess
 
 enable_pretty_logging()
 
@@ -151,7 +157,7 @@ class Operations(DefaultHandler):
 
 		key = self.request.arguments['key']
 		data1 = self.request.arguments['data1']
-		data2 = self.request.arguments['data2']
+		data2 = self.request.arguments['data2'] 
 
 		try:
 			self.bgn.setPublicKey(key)
@@ -162,7 +168,119 @@ class Operations(DefaultHandler):
 
 			self.output(status="success", process=op, data=C)
 		except Exception as e:
-			self.output(status="error", process=op, msg=str(e))			
+			self.output(status="error", process=op, msg=str(e))	
+
+
+class File(tornado.web.RequestHandler):
+	def prepare(self):
+		self.bgn = BGN()
+
+	#def set_default_headers(self):
+	#	self.set_header('Content-Type', 'multipart/form-data')
+
+	def parseCsv(self, line):
+		data = line.split(",")
+
+		result = {}
+
+		try:
+			# data[0] is employee ID
+			result['basicSalary'] = data[1]
+			result['daysOff'] = data[2]
+			result['singleDayWage'] = data[3]
+			result['overtime'] = data[4]
+			result['singleHourWage'] = data[5]
+			result['allowance'] = data[6]
+			result['bonus'] = data[7]
+		except:
+			self.write({"status": "error", "msg": "Not enough parameters: basicSalary, daysOff, singleDayWage, overtime, singleHourWage, allowance, bonus", "debug": json.dumps(data)})
+			return False
+
+		for key, value in result.items():
+			if value == "":
+				self.write({"status": "error", "msg": "Parameter " + key + " has no value"})
+				return False
+
+			try:
+				test = self.bgn.decode(value)
+			except Exception as e:
+				self.write({"status": "error", "msg": "Could not decode parameter " + key + " as a ciphertext: " + str(e)})
+				return False
+
+		return result
+
+	def nestedAdd(self, numbers):
+		result = self.bgn.encrypt(Integer(0))
+
+		for number in numbers:
+			result = self.bgn.add(result, number)
+
+		return result
+
+
+	def upload(self, content):
+		filename = uuid.uuid4().hex
+		file = open("uploads/" + filename +".csv", "w")
+		file.write(content)
+		file.close()
+
+		# https://www.cyberciti.biz/faq/python-run-external-command-and-get-output/
+		p = subprocess.Popen("curl --upload-file " + "uploads/" + filename +".csv https://transfer.sh/" + filename +".csv", stdout=subprocess.PIPE, shell=True)
+		(output, err) = p.communicate()
+		p_status = p.wait()
+
+		self.write({"status": "success", "download": output})
+
+		#os.remove("uploads/" + filename +".csv")
+
+	def post(self):
+		if 'file' not in self.request.files:
+			self.write({"status": "error", "msg": "File (file) not found."})
+			return
+
+		if self.request.files['file'] == '':
+			self.write({"status": "error", "msg": "File (file) can not be empty."})
+			return
+
+		file = self.request.files['file'][0]
+
+		if re.match("^.*\.(csv|CSV)$", file['filename']) is None:
+			self.write({"status": "error", "msg": "The server only accept CSV file."})
+			return
+
+		lines = file['body'].split("\n")
+		pkey = lines[0]
+
+		try:
+			self.bgn.setPublicKey(pkey)
+		except Exception as e:
+			self.write({"status": "error", "msg": "Error when setting public key: " + str(e)})
+			return
+
+		for i in range(1, len(lines)):
+			if len(lines[i].split(",")) <= 1:
+				continue
+			data = self.parseCsv(lines[i])
+
+			if data is False:
+				return
+
+			try:
+				dayOffSalary = self.bgn.minus(self.bgn.mul(data['daysOff'], data['singleDayWage']))
+				overtimeSalary = self.bgn.mul(data['overtime'], data['singleHourWage'])
+				totalSalary = self.nestedAdd([data['basicSalary'], dayOffSalary, overtimeSalary, data['allowance'], data['bonus']])
+			except Exception as e:
+				self.write({"status": "error", "msg": "Error when calculating: " + str(e)})
+				return
+
+			while lines[i].endswith(' ') or lines[i].endswith(','):
+				lines[i] = lines[i][:-1]
+			lines[i] += "," + totalSalary
+
+		result = "\n".join(str(x) for x in lines)
+
+		self.upload(result)
+
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description = 'BGN Web API')
@@ -174,6 +292,7 @@ if __name__ == "__main__":
 		(r"/api/genkey", Genkey),
 		(r"/api/crypt", Crypt),
 		(r"/api/op", Operations),
+		(r"/api/file", File)
 	], debug=True)
 
 	application.listen(args.port[0])
