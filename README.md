@@ -178,6 +178,25 @@ curl -d '{"key": "H4sIAGVWNlsC/3WOSwpDQQgErxJcZ9Ht37M85v7XiEM22QQRxLIaH6G7QTNym2
 {"status": "success", "process": "mul", "time": "0.03", "data": "H4sIAJRaNlsC/w3D0Q2AUAgDwFUM3348oC10FuP+a+gl90QSsyw2W4ZgFXrivqLOJOYvH61XVjLj/QCwtT40NAAAAA==", "msg": ""}
 ```
 
+### Calculating salary 
+
+* Endpoint (your local machine): `http://localhost:8080/api/file`
+* Endpoint (our server with LB and FW): `https://bgn.rainteam.xyz/api/file`
+* Method: POST
+* Params: `file` (content type: multipart/form-data). `file` must be in CSV format: first line is public key, from the second line: employee id, base salary, days off, wage of a day, overtime in hour, salary for each hour overtime, allowance, bonus. The result will be placed in the next colum of each like followed by this formular: total salary = base salary - (days off * wage of a day) + (overtime in hour * salary for each hour overtime) + allowance + bonus.
+* Output: download (link to download result)
+
+#### Example
+
+Command 
+```
+curl -X POST -H "Content-Type: multipart/form-data" -F "file=@tests/test.csv" https://bgn.rainteam.xyz/api/file
+```
+
+```
+{"status": "success", "download": "https://transfer.sh/gS6Js/aa3c6faca8fc4f71be4111ee31af6231.csv"}
+```
+
 ## Performance at security parameter 512bit (size of prime number is 256bit, 20% error)
 
 > Measured on i7-6820HQ, single thread. These numbers are in real CPU time. User CPU time is 20 percent smaller.
