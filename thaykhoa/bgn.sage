@@ -2,12 +2,21 @@ import time
 import sys
 import json
 
+def isqrt(n):
+    x = n
+    y = (x + 1) // 2
+    while y < x:
+        x = y
+        y = (x + n // x) // 2
+    return x
+
 class BGN:
     def KeyGen(self, tau):
         self.tau = tau # Security parameter
         prime_length = self.tau / 2 # Bit-length of primes
         ubound = 2^prime_length - 1
         lbound = 2^(prime_length - 1)
+        self.SIZE_OF_PLAINTEXT = 32
         stop = False
 
         while not stop:
@@ -66,7 +75,7 @@ class BGN:
         self.H = Integer(randrange(1,self.n)) * self.p1 * self.G
         
         # Parameters for decryption
-        self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
+        self.q = min(isqrt(2^(self.SIZE_OF_PLAINTEXT - 1)), self.p1)
         self.pos_lookup_table = {} # lookup table for positive plaintexts
         self.neg_lookup_table = {} # lookup table for negative plaintexts
         g = self.g ^ self.p2
@@ -134,7 +143,7 @@ class BGN:
 bgn = BGN()
 
 start = time.time()
-time bgn.KeyGen(1024)
+bgn.KeyGen(1024)
 
 end = time.time()
 
