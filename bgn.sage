@@ -9,12 +9,8 @@ import time
 
 import io
 import binascii
-
-import multiprocessing
-from threading import Thread
-
-from sage.parallel.multiprocessing_sage import pyprocessing
-
+from pythonds.basic.stack import Stack
+import random
 
 import os
 import pickle
@@ -26,7 +22,7 @@ def test(var):
 	print type(var)
 
 class BGN():
-	def __init__(self):
+	def __init__(self, size):
 		self.G = None
 		self.H = None
 		self.n = None
@@ -38,7 +34,7 @@ class BGN():
 		self.F = None
 		self.p1 = 0
 		self.p2 = 0
-		self.SIZE_OF_PLAINTEXT = 32
+		self.sizeOfPlaintext = size
 		self.k = 2 # Extension degree k = 2
 		self.pos_lookup_table = None
 		self.neg_lookup_table = None
@@ -74,8 +70,8 @@ class BGN():
 
 		lookupTable = {}
 		i = 0
-		self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
-		#self.q = 2^(self.SIZE_OF_PLAINTEXT / 2) - 1
+		self.q = min(int(sqrt(2^(self.plaintextSpace - 1))), self.p1)
+		#self.q = 2^(self.sizeOfPlaintext / 2) - 1
 
 		while i < self.q:
 			value = Integer(data[i]['value'])
@@ -92,7 +88,7 @@ class BGN():
 
 		return lookupTable
 
-	def __genLookupTableThread(self, loopFrom):
+	'''def __genLookupTableThread(self, loopFrom):
 		j = loopFrom
 		g = self.g ^ self.p2
 
@@ -102,28 +98,27 @@ class BGN():
 			a = g^j
 			self.pos_lookup_table[a] = j
 			self.neg_lookup_table[a^(-1)] = j
-			j += 1
+			j += 1'''
 
 	# Parameters for decryption
 	def __genLookupTable(self):
 		s = time.time()
 
-		self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
-		#self.q = 2^(self.SIZE_OF_PLAINTEXT / 2) - 1
+		self.q = min(int(sqrt(2^(self.sizeOfPlaintext - 1))), self.p1)
+		#self.q = 2^(self.sizeOfPlaintext / 2) - 1
 
 		self.pos_lookup_table = {} # lookup table for positive plaintexts
 		self.neg_lookup_table = {} # lookup table for negative plaintexts
 
 		g = self.g ^ self.p2
-		j = 0
 
 		#cpu_count = multiprocessing.cpu_count()
-		cpu_count = 1
-		if cpu_count == 1:
-			for j in range(self.q):
-				a = g^j
-				self.pos_lookup_table[a] = j
-				self.neg_lookup_table[a^(-1)] = j
+		#cpu_count = 1
+		#if cpu_count == 1:
+		for j in range(self.q):
+			a = g^j
+			self.pos_lookup_table[a] = j
+			self.neg_lookup_table[a^(-1)] = j
 		'''else:
 			fragment = int(self.q / cpu_count)
 			loopFrom = 0
@@ -176,13 +171,12 @@ class BGN():
 				if self.p.is_prime():
 					stop = True
 					break
-				#self.L += 1
 
 		self.F = GF(self.p, proof=False) # F = GF(p)
 		self.E = EllipticCurve(self.F, [1, 0]) # E is a super-singular elliptic curve y^2 = x^3 + x defined over F
 		PolyRing.<x> = self.F[]
-		K.<a> = GF(self.p^self.k, name='a', modulus=x^2+1, check_irreducible=False, proof=False) # K = GF(p^2)
-		self.K = K
+		self.K = GF(self.p^self.k, name='a', modulus=x^2+1, check_irreducible=False, proof=False) # K = GF(p^2)
+		self.K.inject_variables(verbose=False)		# https://stackoverflow.com/questions/33239620/sage-polynomials-name-error
 		self.EK = EllipticCurve(self.K, [1, 0]) # Let E to be defined over K
 	
 		# Find i in K such that i^2 = -1 in K
@@ -212,7 +206,9 @@ class BGN():
 		#print self.g.polynomial().list()
 
 
-	def genKey(self, tau, dumpLookupTable = False):
+	def genKey(self, tau, dumpLookupTable = False, genLookupTable = False):
+		s = time.time()
+
 		self.tau = tau # Security parameter
 		self.__init()
 
@@ -221,9 +217,11 @@ class BGN():
 			self.__dumpLookupTable(self.pos_lookup_table, 'pos_lookup_table.bin')
 			self.__dumpLookupTable(self.neg_lookup_table, 'neg_lookup_table.bin')
 		else:
-			self.q = min(2^(self.SIZE_OF_PLAINTEXT / 2) - 1, self.p2)
+			self.q = min(int(sqrt(2^(self.sizeOfPlaintext - 1))), self.p1)
 			self.t2 = (self.g ^ self.p2)^self.q
 			self.t1 = self.t2^(-1)
+			if genLookupTable:
+				self.__genLookupTable()
 
 			if os.path.isfile("pos_lookup_table.bin"):
 				os.remove("pos_lookup_table.bin")
@@ -254,6 +252,10 @@ class BGN():
 			str(self.q)
 		])
 		skey_compressed = BinAscii.bin2text(Gzip.compress(skey, compresslevel=9)).replace('\n', '')
+
+		e = time.time()
+
+		print 'genKey() take %.2f seconds' % (e-s)
 
 		return pkey_compressed, skey_compressed
 
@@ -287,10 +289,7 @@ class BGN():
 	def setPrivateKey(self, skey):
 		s = time.time()
 
-		try:
-			skey_restore = self.decode(skey)
-		except:
-			raise TypeError("Private key is in malformed format.")
+		skey_restore = self.decode(skey)
 
 		self.setPublicKey(skey_restore[0])
 
@@ -315,8 +314,8 @@ class BGN():
 		return self
 		
 	def encrypt(self, M):
-		if (type(M) is not Integer and type(M) is not int) or M > 2^self.SIZE_OF_PLAINTEXT:
-			raise TypeError("Plaintext should be an integer that smaller than 2^" + str(self.SIZE_OF_PLAINTEXT))
+		if (type(M) is not Integer and type(M) is not int) or M > 2^self.sizeOfPlaintext:
+			raise TypeError("Plaintext should be an integer that smaller than 2^" + str(self.sizeOfPlaintext))
 		else:
 			s = time.time()
 
@@ -333,7 +332,11 @@ class BGN():
 		return len(Gzip.decompress(BinAscii.text2bin(data)))'''
 
 	def decode(self, data):
-		return json.loads(Gzip.decompress(BinAscii.text2bin(data)))
+		try:
+			return json.loads(Gzip.decompress(BinAscii.text2bin(data)))
+		except Exception as e:
+			test(data)
+			raise TypeError("Input data is in malformed format: " + str(e))
 
 	def encode(self, data):
 		return BinAscii.bin2text(Gzip.compress(data)).replace('\n', '')
@@ -345,8 +348,10 @@ class BGN():
 				C = Integer(c_arr[1])*a + Integer(c_arr[0])
 			else:					# C is a point on curve
 				C = self.E([Integer(c_arr[0]), Integer(c_arr[1]), Integer(c_arr[2])])
-		except:
-			raise TypeError("Cipher text is in malformed format.")
+		except Exception as e:
+			test(c)
+
+			raise TypeError("Cipher text is in malformed format: " + str(e))
 
 		return C
 
@@ -368,6 +373,7 @@ class BGN():
 			raise RuntimeError("Private key should be installed first")
 
 		C = self.__importCipherFromStr(c)
+
 		if type(C) is type(self.G):   # If C is not a point on curve
 			C = self.__mul(C, self.G)   # C = C * G
 
@@ -377,13 +383,12 @@ class BGN():
 		D = None
 		
 		i = 0
-		if D is None:
-			while i < self.q:
-				if gamma1 in self.pos_lookup_table:
-					D = Integer(i*self.q + self.pos_lookup_table[gamma1])
-					break
-				gamma1 *= self.t1
-				i += 1
+		while i < self.q:
+			if gamma1 in self.pos_lookup_table:
+				D = Integer(i*self.q + self.pos_lookup_table[gamma1])
+				break
+			gamma1 *= self.t1
+			i += 1
 
 		i = 0
 		if D is None:
@@ -400,26 +405,39 @@ class BGN():
 		print 'decrypt() take %.2f seconds' % (e-s)
 
 		if D is None:
-			raise RuntimeError("Could not finish decryption: plaintext is not in range [-2^" + str(self.SIZE_OF_PLAINTEXT-1) + ",2^" + str(self.SIZE_OF_PLAINTEXT-1) + "-1]")
+			raise RuntimeError("Could not finish decryption: plaintext is not in range [-2^" + str(self.sizeOfPlaintext-1) + ",2^" + str(self.sizeOfPlaintext-1) + "-1]")
 		else:
 			return D
 
 	# Private function
 	def __mul(self, c1, c2):
+		s = time.time()
+
 		if type(c1) is not type(self.G) or type(c2) is not type(self.G):
+			test(c1)
+			test(c2)
 			raise TypeError("Ciphertext must be a point on E(GF(p^2))")
 
-		return self.EK(c1).tate_pairing(self.__distortion_map(c2), self.n, self.k)
+		C = self.EK(c1).tate_pairing(self.__distortion_map(c2), self.n, self.k)
 
-	# Require self.EK (require self.p), self.i, self.n, self.k = 2
+
+
+		return C
+
 	def mul(self, c1, c2):
+		s = time.time()
+
 		C1 = self.__importCipherFromStr(c1)
 		C2 = self.__importCipherFromStr(c2)
-		
 		C = self.__mul(C1, C2)
+
+		e = time.time()
+
+		print 'mul() take %.2f seconds' % (e-s)
+
 		return self.__exportCipher(C)
 
-	def __add(self, C1, C2):	
+	def __add(self, C1, C2):
 		if type(C1) == type(self.G):
 			if type(C2) == type(self.G):
 				C = C1 + C2
@@ -436,10 +454,18 @@ class BGN():
 		return C
 
 	def add(self, c1, c2):
+
+		s = time.time()
+
 		C1 = self.__importCipherFromStr(c1)
 		C2 = self.__importCipherFromStr(c2)
 
 		C = self.__add(C1, C2)
+
+		e = time.time()
+
+		print 'add() take %.2f seconds' % (e-s)
+
 		return self.__exportCipher(C)
 
 	def sub(self, c1, c2):
@@ -447,52 +473,140 @@ class BGN():
 
 		C1 = self.__importCipherFromStr(c1)
 		C2 = self.__importCipherFromStr(c2)
-
-		if type(C2) == type(self.G):
-			C2 = -C2
-		else:
-			C2 = C2^(-1)
-		
-		C = self.__add(C1, C2)
+		C = self.__add(C1, self.__minus(C2))
 
 		e = time.time()
-		print 'minus() take %.2f seconds' % (e-s)
+		print 'sub() take %.2f seconds' % (e-s)
 		
 		return self.__exportCipher(C)
 
-	def minus(self, c):
-		C = self.__importCipherFromStr(c)
-
+	def __minus(self, C):
 		if type(C) == type(self.G):
 			C = -C
 		else:
 			C = C^(-1)
 
+		return C
+
+	def minus(self, c):
+		s = time.time()
+
+		C = self.__importCipherFromStr(c)
+		C = self.__minus(C)
+
+		e = time.time()
+
+		print 'minus() take %.2f seconds' % (e-s)
+
 		return self.__exportCipher(C)
 
-#if __name__ == '__main__':
-	# Local machine
-	#s = time.time()
-	#pkey,skey = BGN().genKey(512, dumpLookupTable=False)
-	#e = time.time()
-	#print 'Generating key pair take: %.2f seconds' % (e-s)
+	# Ref: http://interactivepython.org/runestone/static/pythonds/BasicDS/InfixPrefixandPostfixExpressions.html
+	def __convertToPostfix(self, expr):
+		prec = {}
+		prec["*"] = 3
+		#prec["/"] = 3
+		prec["+"] = 2
+		prec["-"] = 2
+		prec["("] = 1
+		opStack = Stack()
+		postfixList = []
+		tokenList = expr.split(" ")
 
-	#print pkey 
-	#print skey
+		try:
+			for token in tokenList:
+				if token not in ['+', '-', '*', '(', ')']:
+					postfixList.append(token)
+				elif token == '(':
+					opStack.push(token)
+				elif token == ')':
+					topToken = opStack.pop()
+					while topToken != '(':
+						postfixList.append(topToken)
+						topToken = opStack.pop()
+				else:
+					while (not opStack.isEmpty()) and (prec[opStack.peek()] >= prec[token]):
+						  postfixList.append(opStack.pop())
+					opStack.push(token)
+		except:
+			raise RuntimeError("Expression is not in correct format")
+
+		while not opStack.isEmpty():
+			postfixList.append(opStack.pop())
+		return " ".join(postfixList)
+
+	# Ref: https://github.com/lilianweng/LeetcodePython/blob/master/expression.py
+	def expr(self, expr):
+		stack = []
+		add = self.add
+		mul = self.mul
+		sub = self.sub
+		ops = {'+': 'add', "*": 'mul', "-": 'sub'}
+		
+		expr = self.__convertToPostfix(expr)
+		for ch in expr.split(" "):
+			if ch not in ['+', '-', '*', '(', ')']:
+				stack.append(ch)
+			else:
+				b = stack.pop()
+				a = stack.pop()
+				c = locals()[ops[ch]](a, b)
+				stack.append(c)					
+		return stack[-1]
+
+if __name__ == '__main__':
+	
+
+	print '256'
+
+	pkey, skey = BGN(32).genKey(512)
 
 
-	#print BGN().setPrivateKey(skey).decrypt(c)
+	addtime = 0
+	bgn = BGN(32)
+	bgn.setPublicKey(pkey)
+	bgn.setPrivateKey(skey)
 
-	# Server
-	'''bgn1 = BGN()
-	bgn1.setPublicKey(pkey)
-	n1 = 2353
-	n2 = 2414
-	c1 = bgn1.encrypt(n1)
-	c2 = bgn1.encrypt(n2)
-	c3 = bgn1.mul(c1, c2)
-	c4 = bgn1.minus(c1, c2)
-	c5 = bgn1.add(c3, c4)'''
+	for i in range(1):
+		print i
+		n1 = 123
+		n2 = 456
+		print n1
+		print n2
+
+		c1 = bgn.encrypt(n1)
+		c2 = bgn.encrypt(n1)
+
+		s = time.time()
+		add = bgn.add(c1,c2)
+		print add
+		print bgn.decrypt(add)
+		print n1+n2
+		e = time.time()
+		addtime += e-s
+		
+
+	print addtime
+
+
+	'''n1 = 2
+	n2 = 5
+	n3 = 6
+	n4 = 4
+	n5 = 8
+	c1 = bgn.encrypt(n1)
+	c2 = bgn.encrypt(n2)
+	c3 = bgn.encrypt(n3)
+	c4 = bgn.encrypt(n4)
+	c5 = bgn.encrypt(n5)
+
+	C = bgn.expr("( %s * %s ) - ( %s + %s ) * %s" % (c1, c2, c3, c4, c5))
+
+	print pkey
+	print "( %s * %s ) - ( %s + %s ) * %s" % (c1, c2, c3, c4, c5)
+	D = bgn.decrypt(C)
+
+	print "Result is: " + str(D)
+	assert (n1 * n2) - (n3 + n4) * n5 == D'''
 
 	# Local machine
 	#bgn2 = BGN()
@@ -513,11 +627,6 @@ class BGN():
 
 	#sys.exit()
 	#d = bgn.decrypt(c)
-
-	'''print "[Public key] " + str(BGN.length(pkey)) + " bytes \n" + pkey
-	print "\n[Private key] " + str(BGN.length(skey)) + " bytes \n" + skey
-	print "\n[Plain text] " + str(len(text)) + " bytes \n" + text
-	print "\n[Cipher text] " + str(BGN.length(c)) + " bytes \n" + c'''
 
 	#assert d == text
 
