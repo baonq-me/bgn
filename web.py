@@ -86,7 +86,7 @@ class Genkey(DefaultHandler):
 		else:
 			length = 512
 
-		pkey, skey = BGN().genKey(length, dumpLookupTable=False)
+		pkey, skey = BGN(32).genKey(length)
 		
 		self.output(status="success", process="genkey", more = {"pkey":pkey, "skey":skey, "length": str(length)})
 
@@ -186,7 +186,7 @@ class Operations(DefaultHandler):
 
 class File(tornado.web.RequestHandler):
 	def prepare(self):
-		self.bgn = BGN()
+		self.bgn = BGN(32)
 
 	def parseCsv(self, line):
 		data = line.split(",")
