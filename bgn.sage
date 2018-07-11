@@ -70,8 +70,8 @@ class BGN():
 
 		lookupTable = {}
 		i = 0
+		#self.q = min(2^(self.sizeOfPlaintext / 2) - 1, self.p2)
 		self.q = min(int(sqrt(2^(self.plaintextSpace - 1))), self.p1)
-		#self.q = 2^(self.sizeOfPlaintext / 2) - 1
 
 		while i < self.q:
 			value = Integer(data[i]['value'])
@@ -104,8 +104,8 @@ class BGN():
 	def __genLookupTable(self):
 		s = time.time()
 
+		#self.q = min(2^(self.sizeOfPlaintext / 2) - 1, self.p2)
 		self.q = min(int(sqrt(2^(self.sizeOfPlaintext - 1))), self.p1)
-		#self.q = 2^(self.sizeOfPlaintext / 2) - 1
 
 		self.pos_lookup_table = {} # lookup table for positive plaintexts
 		self.neg_lookup_table = {} # lookup table for negative plaintexts
@@ -202,10 +202,6 @@ class BGN():
 		# Find a point H of order p2
 		self.H = Integer(randrange(1,self.n)) * self.p1 * self.G
 
-		#print self.g
-		#print self.g.polynomial().list()
-
-
 	def genKey(self, tau, dumpLookupTable = False, genLookupTable = False):
 		s = time.time()
 
@@ -217,6 +213,7 @@ class BGN():
 			self.__dumpLookupTable(self.pos_lookup_table, 'pos_lookup_table.bin')
 			self.__dumpLookupTable(self.neg_lookup_table, 'neg_lookup_table.bin')
 		else:
+			#self.q = min(2^(self.sizeOfPlaintext / 2) - 1, self.p2)
 			self.q = min(int(sqrt(2^(self.sizeOfPlaintext - 1))), self.p1)
 			self.t2 = (self.g ^ self.p2)^self.q
 			self.t1 = self.t2^(-1)
@@ -552,87 +549,3 @@ class BGN():
 				c = locals()[ops[ch]](a, b)
 				stack.append(c)					
 		return stack[-1]
-
-if __name__ == '__main__':
-	
-
-	print '256'
-
-	pkey, skey = BGN(32).genKey(512)
-
-
-	addtime = 0
-	bgn = BGN(32)
-	bgn.setPublicKey(pkey)
-	bgn.setPrivateKey(skey)
-
-	for i in range(1):
-		print i
-		n1 = 123
-		n2 = 456
-		print n1
-		print n2
-
-		c1 = bgn.encrypt(n1)
-		c2 = bgn.encrypt(n1)
-
-		s = time.time()
-		add = bgn.add(c1,c2)
-		print add
-		print bgn.decrypt(add)
-		print n1+n2
-		e = time.time()
-		addtime += e-s
-		
-
-	print addtime
-
-
-	'''n1 = 2
-	n2 = 5
-	n3 = 6
-	n4 = 4
-	n5 = 8
-	c1 = bgn.encrypt(n1)
-	c2 = bgn.encrypt(n2)
-	c3 = bgn.encrypt(n3)
-	c4 = bgn.encrypt(n4)
-	c5 = bgn.encrypt(n5)
-
-	C = bgn.expr("( %s * %s ) - ( %s + %s ) * %s" % (c1, c2, c3, c4, c5))
-
-	print pkey
-	print "( %s * %s ) - ( %s + %s ) * %s" % (c1, c2, c3, c4, c5)
-	D = bgn.decrypt(C)
-
-	print "Result is: " + str(D)
-	assert (n1 * n2) - (n3 + n4) * n5 == D'''
-
-	# Local machine
-	#bgn2 = BGN()
-	#time bgn2.setPrivateKey(skey)
-	#d = bgn2.decrypt(c5)
-
-	#test(d)
-
-	#assert d == ((n1*n2) + (n1-n2))
-
-	#sys.exit(0)
-
-	#d = OperatorsOnData(c1, pkey) + OperatorsOnData(c2, pkey)
-
-	#print bgn.decrypt(d, 'int')
-
-	#print c1
-
-	#sys.exit()
-	#d = bgn.decrypt(c)
-
-	#assert d == text
-
-	# Average time:
-	# Gen key: 4.7s
-	# Encrypt each byte: 0.33s
-	# Decrypt each byte: 0.48s (0.06s per bit)
-	#
-	# Average cipher size: 1 byte in plaintext cost 5040 bytes in cipher text

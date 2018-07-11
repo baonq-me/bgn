@@ -18,12 +18,9 @@ import argparse
 import StringIO
 import re
 import uuid
-
-from utils import BinAscii
 import subprocess
 
 enable_pretty_logging()
-
 
 # https://gist.github.com/mminer/5464753
 class DefaultHandler(tornado.web.RequestHandler):
@@ -41,7 +38,7 @@ class DefaultHandler(tornado.web.RequestHandler):
 		# Set up response dictionary.
 		self.response = dict()
 
-		self.bgn = BGN()
+		self.bgn = BGN(2**32)
 		self.start = time.time()
 
 	def set_default_headers(self):
@@ -53,7 +50,7 @@ class DefaultHandler(tornado.web.RequestHandler):
 		else:
 			self.response['status'] = 'unknown'
 
-		if process in ['genkey', 'encrypt', 'decrypt', 'add', 'sub', 'mul']:
+		if process in ['genkey', 'encrypt', 'decrypt', 'add', 'sub', 'mul', 'expr']:
 			self.response['process'] = process
 		else:
 			self.response['process'] = 'unknown'
@@ -137,6 +134,7 @@ class Crypt(DefaultHandler):
 		except Exception as e:
 			self.output(status="error", process=op, msg=str(e))
 
+
 class Operations(DefaultHandler):
 	def post(self):
 		if self.test('op', self.request.arguments) is False:
@@ -144,39 +142,51 @@ class Operations(DefaultHandler):
 			return
 
 		op = self.request.arguments['op']
-		if op not in ['add', 'mul', 'sub']:
+		if op not in ['add', 'mul', 'sub', 'expr']:
 			self.output(status="error", process="", msg="Invalid operation: " + str(op))
 			return
 		elif self.test('key', self.request.arguments)  is False:
 			self.output(status="error", process=op, msg="Public key should be defined.")
 			return
 
-		if self.test('data1', self.request.arguments) is False or self.test('data2', self.request.arguments) is False:
-			self.output(status="error", process=op, msg="data1 and data2 should be defined.")
-			return
-
 		key = self.request.arguments['key']
-		data1 = self.request.arguments['data1']
-		data2 = self.request.arguments['data2'] 
 
-		try:
-			self.bgn.setPublicKey(key)
-			add = self.bgn.add
-			mul = self.bgn.mul
-			sub = self.bgn.sub
-			C = locals()[op](data1, data2)
+		if op != 'expr':
+			if self.test('data1', self.request.arguments) is False or self.test('data2', self.request.arguments) is False:
+				self.output(status="error", process=op, msg="data1 and data2 should be defined.")
+				return
+			data1 = self.request.arguments['data1']
+			data2 = self.request.arguments['data2'] 
 
-			self.output(status="success", process=op, data=C)
-		except Exception as e:
-			self.output(status="error", process=op, msg=str(e))	
+			try:
+				self.bgn.setPublicKey(key)
+				add = self.bgn.add
+				mul = self.bgn.mul
+				sub = self.bgn.sub
+				C = locals()[op](data1, data2)
+
+				self.output(status="success", process=op, data=C)
+			except Exception as e:
+				self.output(status="error", process=op, msg=str(e))	
+		else:
+			if self.test('expr', self.request.arguments) is False:
+					self.output(status="error", process=op, msg="Expression (expr) should be defined.")
+					return
+
+			expr = self.request.arguments['expr']
+
+			try:
+				self.bgn.setPublicKey(key)
+				C = self.bgn.expr(expr)
+				self.output(status="success", process=op, data=C)
+			except Exception as e:
+				self.output(status="error", process=op, msg=str(e))	
+
 
 
 class File(tornado.web.RequestHandler):
 	def prepare(self):
 		self.bgn = BGN()
-
-	#def set_default_headers(self):
-	#	self.set_header('Content-Type', 'multipart/form-data')
 
 	def parseCsv(self, line):
 		data = line.split(",")

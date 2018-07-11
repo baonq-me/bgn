@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import division
+import random
+
+
 import zlib
 import gzip
 
@@ -9,25 +13,25 @@ class Gzip():
 	# Convert text into binary data with compression enable
 	@staticmethod
 	def compress(string_, mode='wb', compresslevel=1):
-	    out = io.BytesIO()
+		out = io.BytesIO()
 
-	    with gzip.GzipFile(fileobj=out, mode=mode, compresslevel=compresslevel) as fo:
-	        fo.write(string_.encode())
+		with gzip.GzipFile(fileobj=out, mode=mode, compresslevel=compresslevel) as fo:
+			fo.write(string_.encode())
 
-	    bytes_obj = out.getvalue()
+		bytes_obj = out.getvalue()
 
-	    return bytes_obj
-	    
+		return bytes_obj
+		
 	# Convert compressed binary data into original text
 	@staticmethod
 	def decompress(bytes_obj, mode='rb'):
-	    in_ = io.BytesIO()
-	    in_.write(bytes_obj)
-	    in_.seek(0)
-	    with gzip.GzipFile(fileobj=in_, mode=mode) as fo:
-	        gunzipped_bytes_obj = fo.read()
+		in_ = io.BytesIO()
+		in_.write(bytes_obj)
+		in_.seek(0)
+		with gzip.GzipFile(fileobj=in_, mode=mode) as fo:
+			gunzipped_bytes_obj = fo.read()
 
-	    return gunzipped_bytes_obj.decode()
+		return gunzipped_bytes_obj.decode()
 
 class BinAscii():
 	@staticmethod
