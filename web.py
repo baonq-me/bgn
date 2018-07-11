@@ -305,5 +305,5 @@ if __name__ == "__main__":
 		(r"/api/file", File)
 	], debug=True)
 
-	application.listen(args.port[0]
-)	tornado.ioloop.IOLoop.instance().start()
+	application.listen(args.port[0])
+	tornado.ioloop.IOLoop.instance().start()
