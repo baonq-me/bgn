@@ -71,7 +71,7 @@ class BGN():
 		lookupTable = {}
 		i = 0
 		#self.q = min(2^(self.sizeOfPlaintext / 2) - 1, self.p2)
-		self.q = min(int(sqrt(2^(self.plaintextSpace - 1))), self.p1)
+		self.q = min(int(sqrt(2^(self.sizeOfPlaintext - 1))), self.p1)
 
 		while i < self.q:
 			value = Integer(data[i]['value'])
@@ -231,7 +231,7 @@ class BGN():
 			str(self.p),		# Send E by sending p
 			[str(self.G[0]), str(self.G[1]), str(self.G[2])],
 			[str(self.H[0]), str(self.H[1]), str(self.H[2])],
-			[str(i[0]), str(i[1])]
+			[str(i[0]), str(i[1])],
 		])
 
 		pkey_compressed = BinAscii.bin2text(Gzip.compress(pkey, compresslevel=9)).replace('\n', '')
@@ -246,7 +246,7 @@ class BGN():
 			[str(t1[0]), str(t1[1])],
 			[str(t2[0]), str(t2[1])],
 			[str(g[0]), str(g[1])],
-			str(self.q)
+			str(self.p1)
 		])
 		skey_compressed = BinAscii.bin2text(Gzip.compress(skey, compresslevel=9)).replace('\n', '')
 
@@ -294,8 +294,7 @@ class BGN():
 		self.t1 = Integer(skey_restore[2][1])*a + Integer(skey_restore[2][0])
 		self.t2 = Integer(skey_restore[3][1])*a + Integer(skey_restore[3][0])
 		self.g = Integer(skey_restore[4][1])*a + Integer(skey_restore[4][0])
-		self.q = Integer(skey_restore[5])
-
+		self.p1 = Integer(skey_restore[5])
 
 		if os.path.exists('neg_lookup_table.bin') and os.path.exists('pos_lookup_table.bin'):
 			# Load lookup table from file
@@ -378,7 +377,7 @@ class BGN():
 		gamma1 = C
 		gamma2 = C
 		D = None
-		
+	
 		i = 0
 		while i < self.q:
 			if gamma1 in self.pos_lookup_table:
@@ -416,8 +415,6 @@ class BGN():
 			raise TypeError("Ciphertext must be a point on E(GF(p^2))")
 
 		C = self.EK(c1).tate_pairing(self.__distortion_map(c2), self.n, self.k)
-
-
 
 		return C
 
