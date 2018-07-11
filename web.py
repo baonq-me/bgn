@@ -38,7 +38,7 @@ class DefaultHandler(tornado.web.RequestHandler):
 		# Set up response dictionary.
 		self.response = dict()
 
-		self.bgn = BGN(2**32)
+		self.bgn = BGN(32)
 		self.start = time.time()
 
 	def set_default_headers(self):
@@ -305,5 +305,5 @@ if __name__ == "__main__":
 		(r"/api/file", File)
 	], debug=True)
 
-	application.listen(args.port[0])
-	tornado.ioloop.IOLoop.instance().start()
+	application.listen(args.port[0]
+)	tornado.ioloop.IOLoop.instance().start()
