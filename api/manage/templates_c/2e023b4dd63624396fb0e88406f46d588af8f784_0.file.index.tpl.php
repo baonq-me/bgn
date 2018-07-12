@@ -1,4 +1,27 @@
-<!DOCTYPE html>
+<?php
+/* Smarty version 3.1.32, created on 2018-07-12 06:40:07
+  from '/var/www/html/manage/templates/index.tpl' */
+
+/* @var Smarty_Internal_Template $_smarty_tpl */
+if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
+  'version' => '3.1.32',
+  'unifunc' => 'content_5b46f7c796ec39_26911573',
+  'has_nocache_code' => false,
+  'file_dependency' => 
+  array (
+    '2e023b4dd63624396fb0e88406f46d588af8f784' => 
+    array (
+      0 => '/var/www/html/manage/templates/index.tpl',
+      1 => 1531377605,
+      2 => 'file',
+    ),
+  ),
+  'includes' => 
+  array (
+  ),
+),false)) {
+function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl) {
+?><!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -7,24 +30,32 @@
 
 
     <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <?php echo '<script'; ?>
+ src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"><?php echo '</script'; ?>
+>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <?php echo '<script'; ?>
+ src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"><?php echo '</script'; ?>
+>
 
     <!-- Notification-->
-    <script src="https://rawgit.com/notifyjs/notifyjs/master/dist/notify.js" type="text/javascript"></script>
+    <?php echo '<script'; ?>
+ src="https://rawgit.com/notifyjs/notifyjs/master/dist/notify.js" type="text/javascript"><?php echo '</script'; ?>
+>
 
     <!-- PDF Object -->
-    <script src="https://bgn.rainteam.xyz/static/js/pdfobject.min.js" type="text/javascript"></script>
+    <?php echo '<script'; ?>
+ src="https://bgn.rainteam.xyz/static/js/pdfobject.min.js" type="text/javascript"><?php echo '</script'; ?>
+>
 
     <!-- Font Awesome 4 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 
 
-    {literal}
+    
     <style type="text/css">
         ::-webkit-scrollbar {
             width: 0px;
@@ -34,13 +65,18 @@
     </style>
 
     <!-- Custom script -->
-    <!--<script src="static/js/script.js"></script>-->
+    <!--<?php echo '<script'; ?>
+ src="static/js/script.js"><?php echo '</script'; ?>
+>-->
 
-    <script src="static/js/file-upload.js"></script>
+    <?php echo '<script'; ?>
+ src="static/js/file-upload.js"><?php echo '</script'; ?>
+>
     <link rel="stylesheet" href="static/css/file-upload.css"/>
 
 
-    <script type="text/javascript">
+    <?php echo '<script'; ?>
+ type="text/javascript">
         function showTab(tabId)
         {
             var list = ['op', 'crypt', 'userinfo', 'home', 'genkey', 'expr', 'file'];
@@ -86,8 +122,9 @@
 
             $('.file-upload').file_upload();
         });
-    </script>
-    {/literal}
+    <?php echo '</script'; ?>
+>
+    
 
     <link rel="stylesheet" href="static/css/index.css">
 </head>
@@ -140,8 +177,9 @@
     </div>
 </div>
 
-{literal}
-    <script type="text/javascript">
+
+    <?php echo '<script'; ?>
+ type="text/javascript">
         function crypt()
         {
             var key = $("#crypt .panel-default .panel-body div .key").val();
@@ -166,8 +204,9 @@
                 }
             });
         }
-    </script>
-{/literal}
+    <?php echo '</script'; ?>
+>
+
 <div id="crypt" class="container hide">
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -207,8 +246,9 @@
 </div>
 
 
-{literal}
-<script type="text/javascript">
+
+<?php echo '<script'; ?>
+ type="text/javascript">
     function genkey()
     {
         var length = $("#genkey .panel-default .panel-body div .length").val();
@@ -233,8 +273,9 @@
             }
         });
     }
-</script>
-{/literal}
+<?php echo '</script'; ?>
+>
+
 <div id="genkey" class="container hide">
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -266,8 +307,9 @@
 </div>
 
 
-{literal}
-    <script type="text/javascript">
+
+    <?php echo '<script'; ?>
+ type="text/javascript">
         function operation()
         {
             var key = $("#op .panel-default .panel-body div .key").val();
@@ -295,8 +337,9 @@
                 }
             });
         }
-    </script>
-{/literal}
+    <?php echo '</script'; ?>
+>
+
 <div id="op" class="container hide">
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -357,8 +400,9 @@
 -->
 
 
-{literal}
-    <script type="text/javascript">
+
+    <?php echo '<script'; ?>
+ type="text/javascript">
         function expression()
         {
             var key = $("#expr .panel-default .panel-body div .key").val();
@@ -382,8 +426,9 @@
                 }
             });
         }
-    </script>
-{/literal}
+    <?php echo '</script'; ?>
+>
+
 <div id="expr" class="container hide">
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -415,7 +460,8 @@
     </div>
 </div>
 
-<script>
+<?php echo '<script'; ?>
+>
 function upload() {
     var fd = new FormData();
     fd.append('file', $('input[type=file]')[0].files[0]);
@@ -434,7 +480,8 @@ function upload() {
 
     return false;
 }
-</script>
+<?php echo '</script'; ?>
+>
 
 <div id="file" class="container hide">
     <div class="panel panel-default">
@@ -483,11 +530,15 @@ function upload() {
         </div>
         <div class="panel-body">
             <ul>
-                <li>Username: {$username}</li>
-                <li>Email: {$email}</li>
+                <li>Username: <?php echo $_smarty_tpl->tpl_vars['username']->value;?>
+</li>
+                <li>Email: <?php echo $_smarty_tpl->tpl_vars['email']->value;?>
+</li>
             </ul>
         </div>
     </div>
 </div>
 </body>
 </html>
+<?php }
+}

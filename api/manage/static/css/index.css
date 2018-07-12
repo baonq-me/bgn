@@ -1,0 +1,42 @@
+.hide {
+    display: none;
+}
+
+
+.things{
+    opacity:0.3;
+}
+
+.panel:hover .things{
+    display:block;
+    opacity: 1;
+    transition: width, border opacity .0s linear .2s;
+    -webkit-transition: width, border opacity .0s linear .2s;
+    -moz-transition: width, border opacity .0s linear .2s;
+    -ms-transition: width, border opacity .0s linear .2s;
+
+    transition: opacity .2s linear .2s;
+    -webkit-transition: opacity .2s linear .2s;
+    -moz-transition: opacity .2s linear .2s;
+    -ms-transition: opacity .2s linear .2s;
+}
+
+.panel-footer{
+    background-color:#ffffff !important;
+    font-size:16px;
+}
+
+textarea
+{
+    font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+
+nav .container
+{
+    margin-top: 0px !important;
+}
+
+.container
+{
+    margin-top: 70px;
+}
