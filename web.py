@@ -187,6 +187,7 @@ class Operations(DefaultHandler):
 class File(tornado.web.RequestHandler):
 	def prepare(self):
 		self.bgn = BGN(32)
+		self.start = time.time()
 
 	def parseCsv(self, line):
 		data = line.split(",")
@@ -239,7 +240,10 @@ class File(tornado.web.RequestHandler):
 		(output, err) = p.communicate()
 		p_status = p.wait()
 
-		self.write({"status": "success", "download": output})
+		self.end = time.time()
+		self.time = '%.2f' % (self.end - self.start)
+
+		self.write({"status": "success", "download": output, "time": self.time})
 
 		#os.remove("uploads/" + filename +".csv")
 
