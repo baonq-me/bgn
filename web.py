@@ -235,7 +235,7 @@ class File(tornado.web.RequestHandler):
 		file.close()
 
 		# https://www.cyberciti.biz/faq/python-run-external-command-and-get-output/
-		p = subprocess.Popen("curl --upload-file " + "uploads/" + filename +".csv https://transfer.sh/" + filename +".csv", stdout=subprocess.PIPE, shell=True)
+		p = subprocess.Popen("curl --upload-file " + "uploads/" + filename +".csv https://files.rainteam.xyz/" + filename +".csv", stdout=subprocess.PIPE, shell=True)
 		(output, err) = p.communicate()
 		p_status = p.wait()
 
