@@ -150,8 +150,8 @@ class BGN():
 	def __init(self):
 		prime_length = self.tau / 2 # Bit-length of primes
 		stop = False
-		ubound = (2^prime_length) - 1
-		lbound = 2^(prime_length - 1)
+		ubound = int((2^prime_length) - 1)
+		lbound = int(2^(prime_length - 1))
 
 		while not stop:
 			self.p1 = 0
@@ -546,3 +546,5 @@ class BGN():
 				c = locals()[ops[ch]](a, b)
 				stack.append(c)					
 		return stack[-1]
+
+pkey, skey = BGN(32).genKey(89)
