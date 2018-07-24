@@ -547,4 +547,4 @@ class BGN():
 				stack.append(c)					
 		return stack[-1]
 
-pkey, skey = BGN(32).genKey(89)
+pkey, skey = BGN(32).genKey(31)
