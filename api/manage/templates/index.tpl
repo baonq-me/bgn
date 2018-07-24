@@ -16,8 +16,8 @@
     <!-- Notification-->
     <script src="https://rawgit.com/notifyjs/notifyjs/master/dist/notify.js" type="text/javascript"></script>
 
-    <!-- PDF Object -->
-    <script src="https://bgn.rainteam.xyz/static/js/pdfobject.min.js" type="text/javascript"></script>
+    <!-- PDF Object
+    <script src="https://bgn.rainteam.xyz/static/js/pdfobject.min.js" type="text/javascript"></script>-->
 
     <!-- Font Awesome 4 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -28,6 +28,12 @@
     <style type="text/css">
         ::-webkit-scrollbar {
             width: 0px;
+        }
+
+        .navbar {
+            position: sticky;
+            z-index: 100;
+            top: 0;
         }
 
 
@@ -93,7 +99,7 @@
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top">
+<nav class="navbar navbar-default">
     <div class="container">
         <div class="navbar-header">
             <a class="navbar-brand" href="/">Homomorphic encryption</a>
@@ -144,6 +150,8 @@
     <script type="text/javascript">
         function crypt()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#crypt .panel-default .panel-body div .key").val();
             var data = $("#crypt .panel-default .panel-body div .data").val();
             var op = $("#crypt .panel-default .panel-body div label input[name=op]:checked").val();
@@ -157,9 +165,14 @@
                 success: function(data) {
                     console.log(data);
 
-                    $("#crypt .panel-default .panel-footer div .data").val(data['data']);
-
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    if (data['status'] == 'success')
+                    {
+                        $("#crypt .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -211,6 +224,8 @@
 <script type="text/javascript">
     function genkey()
     {
+        $.notify("Please wait ...", "warn");
+
         var length = $("#genkey .panel-default .panel-body div .length").val();
         console.log(length);
 
@@ -223,10 +238,16 @@
             success: function(data) {
                 console.log(data);
 
-                $("#genkey .panel-default .panel-footer div .pkey").val(data['pkey']);
-                $("#genkey .panel-default .panel-footer div .skey").val(data['skey']);
+                if (data['status'] == 'success')
+                {
+                    $("#genkey .panel-default .panel-footer div .pkey").val(data['pkey']);
+                    $("#genkey .panel-default .panel-footer div .skey").val(data['skey']);
 
-                $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                } else 
+                {
+                    $.notify(data['msg'], "error");
+                }
             },
             error: function(x, t, m) {
                 $.notify(console.log(x.responseText), "error");
@@ -245,7 +266,7 @@
 
         <div class="panel-body">
             <div class="form-group">
-                <label for="">Key length (default: 512; recommended: 1024)</label>
+                <label for="">Key length (min: 32; default: 512; recommended: 1024)</label>
                 <input type="text" class="form-control length" />
             </div>
             <button class="btn btn-success" style="float: right;" onclick="genkey()">Start !</button>
@@ -270,6 +291,8 @@
     <script type="text/javascript">
         function operation()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#op .panel-default .panel-body div .key").val();
             var data1 = $("#op .panel-default .panel-body div .data1").val();
             var data2 = $("#op .panel-default .panel-body div .data2").val();
@@ -286,9 +309,14 @@
                 success: function(data) {
                     console.log(data);
 
-                    $("#op .panel-default .panel-footer div .data").val(data['data']);
-
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    if (data['status'] == 'success')
+                    {
+                        $("#op .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -311,7 +339,7 @@
                 <br/>
                 <label class="radio-inline"><input type="radio" name="op" value="add">Addition</label>
                 <label class="radio-inline"><input type="radio" name="op" value="sub">Substraction</label>
-                <label class="radio-inline"><input type="radio" name="op" value="sub">Multiplication</label>
+                <label class="radio-inline"><input type="radio" name="op" value="mul">Multiplication</label>
             </div>
 
             <div class="form-group">
@@ -361,6 +389,8 @@
     <script type="text/javascript">
         function expression()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#expr .panel-default .panel-body div .key").val();
             var expr = $("#expr .panel-default .panel-body div .expr").val();
 
@@ -373,9 +403,16 @@
                 success: function(data) {
                     console.log(data);
 
-                    $("#expr .panel-default .panel-footer div .data").val(data['data']);
+                    if (data['status'] == 'success')
+                    {
+                        $("#expr .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
 
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -419,6 +456,9 @@
 function upload() {
     var fd = new FormData();
     fd.append('file', $('input[type=file]')[0].files[0]);
+
+
+    $.notify("Please wait ...", "warn");
 
     $.ajax({
         url: 'https://bgn.rainteam.xyz/api/file',

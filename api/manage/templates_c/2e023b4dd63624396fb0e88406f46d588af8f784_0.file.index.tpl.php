@@ -1,18 +1,18 @@
 <?php
-/* Smarty version 3.1.32, created on 2018-07-12 06:40:07
+/* Smarty version 3.1.32, created on 2018-07-15 20:23:56
   from '/var/www/html/manage/templates/index.tpl' */
 
 /* @var Smarty_Internal_Template $_smarty_tpl */
 if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   'version' => '3.1.32',
-  'unifunc' => 'content_5b46f7c796ec39_26911573',
+  'unifunc' => 'content_5b4bad5ccf2887_94487332',
   'has_nocache_code' => false,
   'file_dependency' => 
   array (
     '2e023b4dd63624396fb0e88406f46d588af8f784' => 
     array (
       0 => '/var/www/html/manage/templates/index.tpl',
-      1 => 1531377605,
+      1 => 1531686226,
       2 => 'file',
     ),
   ),
@@ -20,7 +20,7 @@ if ($_smarty_tpl->_decodeProperties($_smarty_tpl, array (
   array (
   ),
 ),false)) {
-function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl) {
+function content_5b4bad5ccf2887_94487332 (Smarty_Internal_Template $_smarty_tpl) {
 ?><!DOCTYPE html>
 <html>
 <head>
@@ -45,10 +45,10 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
  src="https://rawgit.com/notifyjs/notifyjs/master/dist/notify.js" type="text/javascript"><?php echo '</script'; ?>
 >
 
-    <!-- PDF Object -->
+    <!-- PDF Object
     <?php echo '<script'; ?>
  src="https://bgn.rainteam.xyz/static/js/pdfobject.min.js" type="text/javascript"><?php echo '</script'; ?>
->
+>-->
 
     <!-- Font Awesome 4 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -59,6 +59,12 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
     <style type="text/css">
         ::-webkit-scrollbar {
             width: 0px;
+        }
+
+        .navbar {
+            position: sticky;
+            z-index: 100;
+            top: 0;
         }
 
 
@@ -130,7 +136,7 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
 </head>
 <body>
 
-<nav class="navbar navbar-default navbar-fixed-top">
+<nav class="navbar navbar-default">
     <div class="container">
         <div class="navbar-header">
             <a class="navbar-brand" href="/">Homomorphic encryption</a>
@@ -182,6 +188,8 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
  type="text/javascript">
         function crypt()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#crypt .panel-default .panel-body div .key").val();
             var data = $("#crypt .panel-default .panel-body div .data").val();
             var op = $("#crypt .panel-default .panel-body div label input[name=op]:checked").val();
@@ -195,9 +203,14 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
                 success: function(data) {
                     console.log(data);
 
-                    $("#crypt .panel-default .panel-footer div .data").val(data['data']);
-
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    if (data['status'] == 'success')
+                    {
+                        $("#crypt .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -251,6 +264,8 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
  type="text/javascript">
     function genkey()
     {
+        $.notify("Please wait ...", "warn");
+
         var length = $("#genkey .panel-default .panel-body div .length").val();
         console.log(length);
 
@@ -263,10 +278,16 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
             success: function(data) {
                 console.log(data);
 
-                $("#genkey .panel-default .panel-footer div .pkey").val(data['pkey']);
-                $("#genkey .panel-default .panel-footer div .skey").val(data['skey']);
+                if (data['status'] == 'success')
+                {
+                    $("#genkey .panel-default .panel-footer div .pkey").val(data['pkey']);
+                    $("#genkey .panel-default .panel-footer div .skey").val(data['skey']);
 
-                $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                } else 
+                {
+                    $.notify(data['msg'], "error");
+                }
             },
             error: function(x, t, m) {
                 $.notify(console.log(x.responseText), "error");
@@ -286,7 +307,7 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
 
         <div class="panel-body">
             <div class="form-group">
-                <label for="">Key length (default: 512; recommended: 1024)</label>
+                <label for="">Key length (min: 32; default: 512; recommended: 1024)</label>
                 <input type="text" class="form-control length" />
             </div>
             <button class="btn btn-success" style="float: right;" onclick="genkey()">Start !</button>
@@ -312,6 +333,8 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
  type="text/javascript">
         function operation()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#op .panel-default .panel-body div .key").val();
             var data1 = $("#op .panel-default .panel-body div .data1").val();
             var data2 = $("#op .panel-default .panel-body div .data2").val();
@@ -328,9 +351,14 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
                 success: function(data) {
                     console.log(data);
 
-                    $("#op .panel-default .panel-footer div .data").val(data['data']);
-
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    if (data['status'] == 'success')
+                    {
+                        $("#op .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -354,7 +382,7 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
                 <br/>
                 <label class="radio-inline"><input type="radio" name="op" value="add">Addition</label>
                 <label class="radio-inline"><input type="radio" name="op" value="sub">Substraction</label>
-                <label class="radio-inline"><input type="radio" name="op" value="sub">Multiplication</label>
+                <label class="radio-inline"><input type="radio" name="op" value="mul">Multiplication</label>
             </div>
 
             <div class="form-group">
@@ -405,6 +433,8 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
  type="text/javascript">
         function expression()
         {
+            $.notify("Please wait ...", "warn");
+
             var key = $("#expr .panel-default .panel-body div .key").val();
             var expr = $("#expr .panel-default .panel-body div .expr").val();
 
@@ -417,9 +447,16 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
                 success: function(data) {
                     console.log(data);
 
-                    $("#expr .panel-default .panel-footer div .data").val(data['data']);
+                    if (data['status'] == 'success')
+                    {
+                        $("#expr .panel-default .panel-footer div .data").val(data['data']);
+                        $.notify("Operation finished in " + data['time'] + "s ", "success");
+                    } else 
+                    {
+                        $.notify(data['msg'], "error");
+                    }
 
-                    $.notify("Operation finished in " + data['time'] + "s ", "success");
+
                 },
                 error: function(x, t, m) {
                     $.notify(console.log(x.responseText), "error");
@@ -465,6 +502,9 @@ function content_5b46f7c796ec39_26911573 (Smarty_Internal_Template $_smarty_tpl)
 function upload() {
     var fd = new FormData();
     fd.append('file', $('input[type=file]')[0].files[0]);
+
+
+    $.notify("Please wait ...", "warn");
 
     $.ajax({
         url: 'https://bgn.rainteam.xyz/api/file',
