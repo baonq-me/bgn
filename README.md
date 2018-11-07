@@ -49,6 +49,7 @@ pip install binascii
 pip install tornado
 pip install importlib
 pip install tornado
+pip install pythonds
 sage -pip install bitarray
 ```
 
