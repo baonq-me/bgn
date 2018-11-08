@@ -2,4 +2,4 @@
 
 sage bgn.sage
 mv bgn.sage.py bgn.py
-sage web.py -p 8080
+sage web.py -p 20000
