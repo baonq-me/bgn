@@ -1,4 +1,4 @@
-# Somewhat homomorphic encryption over elliptic curve using BGN algorithm
+# Somewhat homomorphic encryption over elliptic curve using BGN cryptosystem
 
 Homomorphic encryption scheme is a kind of **asymmetric encryption scheme** that allow performing basic elementary mathematical operations of arithmetic on **cipher text**:
 - Addition
